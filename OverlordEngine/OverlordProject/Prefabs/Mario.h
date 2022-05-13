@@ -1,0 +1,78 @@
+#pragma once
+#include <stdafx.cpp>
+#include "Character.h"
+enum class GameMode
+{
+	FIRSTPERSON,
+	THIRDPERSON
+};
+
+class Mario : public GameObject
+{
+public:
+	Mario(const CharacterDesc& characterDesc/*, ModelComponent* modelComp */);
+	~Mario() override = default;
+
+	Mario(const Mario& other) = delete;
+	Mario(Mario&& other) noexcept = delete;
+	Mario& operator=(const Mario& other) = delete;
+	Mario& operator=(Mario&& other) noexcept = delete;
+
+	void DrawImGui();
+	void SetGameMode(GameMode gameMode);
+
+protected:
+	void Initialize(const SceneContext&) override;
+	void Update(const SceneContext&) override;
+
+private:
+	CameraComponent* m_pCameraComponent{};
+	ControllerComponent* m_pControllerComponent{};
+
+	CharacterDesc m_CharacterDesc;
+	float m_TotalPitch{}, m_TotalYaw{};				//Total camera Pitch(X) and Yaw(Y) rotation
+	float m_MoveAcceleration{},						//Acceleration required to reach maxMoveVelocity after 1 second (maxMoveVelocity / moveAccelerationTime)
+		m_FallAcceleration{},						//Acceleration required to reach maxFallVelocity after 1 second (maxFallVelocity / fallAccelerationTime)
+		m_MoveSpeed{};								//MoveSpeed > Horizontal Velocity = MoveDirection * MoveVelocity (= TotalVelocity.xz)
+
+	XMFLOAT3 m_TotalVelocity{};						//TotalVelocity with X/Z for Horizontal Movement AND Y for Vertical Movement (fall/jump)
+	XMFLOAT3 m_CurrentDirection{};					//Current/Last Direction based on Camera forward/right (Stored for deacceleration)
+
+	GameMode m_GameMode = GameMode::FIRSTPERSON;
+	const float m_MinPitch = -9.5f;					//Measured values
+	const float m_MaxPitch = 75.f;
+	ModelComponent* m_pModelComponent;
+	//Rotation of the character mesh before camera rotation
+		//Animation stuff
+	ModelAnimator* pAnimator{};
+
+	int m_AnimationClipId{ 0 };
+	float m_AnimationSpeed{ 1.f };
+
+	char** m_ClipNames{};
+	int m_ClipCount{};
+	//===============
+	//Matrices
+	const PxVec3 m_Down = { GetTransform()->GetUp().x * -1,
+			GetTransform()->GetUp().y * -1,
+			GetTransform()->GetUp().z * -1 };
+
+	//Movement stuff
+	float m_RunSpeed;
+	float m_WalkSpeed;
+	bool m_IsRunning; //Need this for triple jump
+	bool m_JustJumped = false;
+	bool m_JustLanded = false;
+	bool m_ThirdJumpPrimed = false;
+	float m_LandedTimeDouble{}; //How long ago mario landed from single jump
+	const float m_MaxLandedTimeDouble{0.2f}; //Max amount of time mario can jump after landing to initiate double and/or triple jump
+
+	//Same logic but for triple jump
+	float m_LandedTimeTriple{}; //How long ago mario landed from single jump
+	const float m_MaxLandedTimeTriple{ 0.2f }; //Max amount of time mario can jump after landing to initiate double and/or triple jump
+
+	//Long jump
+	bool m_LongJump = false;
+	const float m_LongJumpSpeed = 25.f;
+};
+
