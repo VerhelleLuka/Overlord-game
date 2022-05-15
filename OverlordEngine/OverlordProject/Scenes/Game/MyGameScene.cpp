@@ -6,10 +6,10 @@
 #include "Materials/ColorMaterial.h"
 #include <Materials/PostPixelation.h>
 #include <Materials/PostGrayscale.h>
-
+#include "Components/SpriteComponent.h"
 void MyGameScene::Initialize()
 {
-	m_SceneContext.settings.enableOnGUI = true;
+	//m_SceneContext.settings.enableOnGUI = true;
 	m_SceneContext.settings.drawGrid = false;
 
 	//Ground Plane
@@ -74,6 +74,16 @@ void MyGameScene::Initialize()
 	//AddPostProcessingEffect(m_pGrayscale);
 	//m_pGrayscale->SetIsEnabled(true);
 	m_pPixelation->IncreasePixelation();
+
+	//Sprite
+	for (int i{}; i < 6; ++i)
+	{
+		m_pUI[i] = new GameObject();
+		m_pUI[i]->AddComponent(new SpriteComponent(L"Textures/TestSprite.png", { 0.5f, 0.5f }, { 1.f,1.f ,1.f ,1.f }));
+		AddChild(m_pUI[i]);
+		m_pUI[i]->GetComponent<SpriteComponent>()->GetTransform()->Translate((m_SceneContext.windowWidth / 50.f) * ((i + 1) * 1.1f), m_SceneContext.windowHeight / 10.f, .9f);
+		m_pUI[i]->GetComponent<SpriteComponent>()->GetTransform()->Rotate(0, 0, (360.f / ((i % 2) + 1)), true);
+	}
 }
 
 void MyGameScene::Update()
@@ -99,5 +109,5 @@ void MyGameScene::Update()
 
 void MyGameScene::OnGUI()
 {
-	m_pCharacter->DrawImGui();
+	//m_pCharacter->DrawImGui();
 }

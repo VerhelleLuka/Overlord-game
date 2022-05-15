@@ -36,6 +36,6 @@ private:
 	int m_NrPixels;
 	float m_PixelationTimer = 0.f;
 	const float m_PixelationTime = 0.001f;
-
+	GameObject* m_pUI[6];
 };
 
