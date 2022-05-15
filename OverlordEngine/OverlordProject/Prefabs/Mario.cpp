@@ -52,29 +52,30 @@ void Mario::Initialize(const SceneContext& sceneContext)
 	sceneContext.pInput->AddInputAction(action);
 
 	//Texture
-	const auto pSkinnedMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial>();
+	const auto pSkinnedMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Skinned>();
 	pSkinnedMaterial->SetDiffuseTexture(L"Textures/Mario_UV.png");
 
 	m_pModelComponent->SetMaterial(pSkinnedMaterial);
 
 	////Animation
-	//if (m_pModelComponent != nullptr)
-	//{
-	//	pAnimator = m_pModelComponent->GetAnimator();
-	//	pAnimator->SetAnimation(m_AnimationClipId);
-	//	pAnimator->SetAnimationSpeed(m_AnimationSpeed);
-	//	//Gather Clip Names
-	//	m_ClipCount = pAnimator->GetClipCount();
-	//	m_ClipNames = new char* [m_ClipCount];
-	//	for (auto i{ 0 }; i < m_ClipCount; ++i)
-	//	{
-	//		pAnimator->SetAnimation(i);
-	//		auto clipName = StringUtil::utf8_encode(pAnimator->GetClipName());
-	//		m_ClipNames[i] = new char[clipName.size() + 1];
-	//		strcpy_s(m_ClipNames[i], sizeof(m_ClipNames[i]), clipName.c_str());
-	//	}
-	//	pAnimator->SetAnimation(2);
-	//}
+	if (m_pModelComponent != nullptr)
+	{
+		m_pAnimator = m_pModelComponent->GetAnimator();
+		m_pAnimator->SetAnimation(m_AnimationClipId);
+		m_pAnimator->SetAnimationSpeed(m_AnimationSpeed);
+		//Gather Clip Names
+		m_ClipCount = m_pAnimator->GetClipCount();
+		m_ClipNames = new char* [m_ClipCount];
+		for (auto i{ 0 }; i < m_ClipCount; ++i)
+		{
+			m_pAnimator->SetAnimation(i);
+			auto clipName = StringUtil::utf8_encode(m_pAnimator->GetClipName());
+			m_ClipNames[i] = new char[clipName.size() + 1];
+			//strcpy_s(m_ClipNames[i], sizeof(m_ClipNames[i]), clipName.c_str());
+		}
+		m_pAnimator->SetAnimation(2);
+	}
+	m_pAnimator->Play();
 
 	//Set foot position 1.6 higher due to offset
 	PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
@@ -89,19 +90,23 @@ m_pControllerComponent->GetFootPosition().z };
 
 	//m_pControllerComponent->GetPxController().set
 	//SoundManager::Get()->GetSystem()->playSound()
+	m_PreviousState = MovementState::IDLE;
+	m_MovementState = MovementState::IDLE;
 }
 
 void Mario::Update(const SceneContext& sceneContext)
 {
 	if (m_pCameraComponent->IsActive())
 	{
+		if (m_MovementState != MovementState::JUMPING && m_MovementState != MovementState::BACKFLIP && m_MovementState != MovementState::FRONTFLIP)
+			m_MovementState = MovementState::IDLE;
 		//constexpr float epsilon{ 0.01f }; //Constant that can be used to compare if a float is near zero
 
 		//***************
 		//HANDLE INPUT
 
 		//## Input Gathering (move)
-		XMFLOAT2 move = {}; //Uncomment
+		XMFLOAT2 move = { 0.f,0.f };
 
 		bool isMovingX = false;
 		bool isMovingZ = false;
@@ -111,12 +116,12 @@ void Mario::Update(const SceneContext& sceneContext)
 
 		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_MoveForward))
 		{
-			move.y = 0.5f;
+			move.y += 0.5f;
 			isMovingZ = true;
 		}
-		else if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_MoveBackward))
+		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_MoveBackward))
 		{
-			move.y = -0.5f;
+			move.y += -0.5f;
 			isMovingZ = true;
 		}
 
@@ -124,12 +129,12 @@ void Mario::Update(const SceneContext& sceneContext)
 		//Optional: if move.x is near zero (abs(move.x) < epsilon), you could use the Left ThumbStickPosition.x for movement
 		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_MoveLeft))
 		{
-			move.x = -0.5f;
+			move.x += -0.5f;
 			isMovingX = true;
 		}
-		else if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_MoveRight))
+		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_MoveRight))
 		{
-			move.x = 0.5f;
+			move.x += 0.5f;
 			isMovingX = true;
 
 		}
@@ -210,22 +215,67 @@ void Mario::Update(const SceneContext& sceneContext)
 			moveAccell *= 2;
 			moveAccell *= 2;
 			m_CharacterDesc.maxMoveSpeed = m_RunSpeed;
+
+			//Don't run if not touching ground
+			PxRaycastBuffer raycastBuffer;
+			PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
+			m_pControllerComponent->GetFootPosition().y,
+			m_pControllerComponent->GetFootPosition().z };
+			if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer))
+			{
+				m_MovementState = MovementState::RUNNING;
+			}
+			if (!m_RunAnimSet)
+			{
+				m_RunAnimSet = true;
+				m_WalkAnimSet = false;
+			}
 		}
 		else
 		{
+			if (move.x != 0 || move.y != 0)
+			{
+				//Don't run if not touching ground
+				PxRaycastBuffer raycastBuffer;
+				PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
+				m_pControllerComponent->GetFootPosition().y,
+				m_pControllerComponent->GetFootPosition().z };
+				if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer))
+				{
+					m_MovementState = MovementState::WALKING;
+				}
+			}
 			m_IsRunning = false;
 			m_CharacterDesc.maxMoveSpeed = m_WalkSpeed;
 		}
 		//If the character is moving (= input is pressed)
 		cameraForward = m_pCameraComponent->GetTransform()->GetForward();
 
+		auto camForward = XMVector3Normalize({ cameraForward.x,0, cameraForward.z });
+
+		auto cameraRight = m_pCameraComponent->GetTransform()->GetRight();
+
+		auto camRight = XMVector3Normalize({ cameraRight.x,0, cameraRight.z });
 		//If player isn't ducked
 		if (!ducked)
 		{
+			XMVECTOR playerRot{};
+			bool isMoving{ false };
+			int movementSignZ = 1;
+
 			if (isMovingZ)
 			{
 				//Calculate & Store the current direction (m_CurrentDirection) >> based on the forward/right vectors and the pressed input
 				m_CurrentDirection = { cameraForward.x,0 , cameraForward.z };
+
+				//NEW
+
+				if (move.y > 0)
+				{
+					movementSignZ = -1;
+				}
+				m_CurrentDirection = { m_pModelComponent->GetTransform()->GetForward().x * movementSignZ,0 , m_pModelComponent->GetTransform()->GetForward().z * movementSignZ };
+
 				//Increase the current MoveSpeed with the current Acceleration (m_MoveSpeed)
 				//Make sure the current MoveSpeed stays below the maximum MoveSpeed (CharacterDesc::maxMoveSpeed)
 				m_MoveSpeed += moveAccell * move.y;
@@ -233,13 +283,27 @@ void Mario::Update(const SceneContext& sceneContext)
 				{
 					m_MoveSpeed = m_CharacterDesc.maxMoveSpeed * move.y;
 				}
+				XMVectorSetZ(playerRot, move.y);
+				isMoving = true;
 			}
 			if (isMovingX)
 			{
-				auto cameraRight = m_pCameraComponent->GetTransform()->GetRight();
+
 				//Calculate & Store the current direction (m_CurrentDirection) >> based on the forward/right vectors and the pressed input
-				XMVECTOR vector = XMVector3Normalize({ m_CurrentDirection.x + cameraRight.x, 0, m_CurrentDirection.z + cameraRight.z });
+				int movementSign = 1;
+				if (move.x < 0 && isMoving)
+				{
+					movementSign = -1;
+				}
+
+
+				XMVECTOR vector = XMVector3Normalize({ m_CurrentDirection.x + cameraRight.x * movementSign, 0, m_CurrentDirection.z + cameraRight.z * movementSign });
 				m_CurrentDirection = { XMVectorGetX(vector),0 , XMVectorGetZ(vector) };
+
+				////NEW
+				//XMVECTOR vector = XMVector3Normalize({ m_CurrentDirection.x + m_pModelComponent->GetTransform()->GetRight().x * movementSign, 0,m_CurrentDirection.z + m_pModelComponent->GetTransform()->GetRight().z * movementSign });
+
+				//m_CurrentDirection = { XMVectorGetX(vector),0 , XMVectorGetZ(vector)};
 
 				//Increase the current MoveSpeed with the current Acceleration (m_MoveSpeed)
 				//Make sure the current MoveSpeed stays below the maximum MoveSpeed (CharacterDesc::maxMoveSpeed)
@@ -249,7 +313,23 @@ void Mario::Update(const SceneContext& sceneContext)
 				{
 					m_MoveSpeed = m_CharacterDesc.maxMoveSpeed * move.x;
 				}
+				XMVectorSetX(playerRot, move.x);
+				isMoving = true;
+
 			}
+
+			if (isMoving)
+			{
+				auto movementDir = XMVector2Normalize({ move.x, move.y });
+				auto movementForward = XMVectorSet(move.y * XMVectorGetX(camForward), 0.f, move.y * XMVectorGetZ(camForward), 0.f);
+				auto movementRight = XMVectorSet(move.x * XMVectorGetX(camRight), 0.f, move.x * XMVectorGetZ(camRight), 0.f);
+				auto movementTotal = movementForward + movementRight;
+				float rotAngle = -atan2(XMVectorGetZ(movementTotal), XMVectorGetX(movementTotal));
+				//Convert to degrees
+				rotAngle = (rotAngle * 180.f) / 3.1415f;
+				m_pModelComponent->GetTransform()->Rotate(0.f, rotAngle - 90.f, 0.f);
+			}
+
 		}
 		//Else (character is not moving, or stopped moving)
 		if (!isMovingX && !isMovingZ && !m_LongJump)
@@ -298,6 +378,18 @@ void Mario::Update(const SceneContext& sceneContext)
 		//This part is very fragile with all the booleans, please don't mess with it --
 		if (!SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer))
 		{
+			//if (m_MovementState != MovementState::FRONTFLIP || m_MovementState != MovementState::BACKFLIP)
+			//{
+			//	m_MovementState = MovementState::JUMPING;
+			//}
+			//If the character is going down, set him to fall
+			if (m_TotalVelocity.y < 0)
+			{
+
+				if (m_MovementState != MovementState::FRONTFLIP && m_MovementState != MovementState::BACKFLIP)
+					m_MovementState = MovementState::JUMPING;
+			}
+			//Falling
 			if (!m_LongJump)
 			{
 				m_TotalVelocity.y -= m_FallAcceleration * elapsedTime;
@@ -305,8 +397,9 @@ void Mario::Update(const SceneContext& sceneContext)
 			//Gravity works slower in a long jump :)
 			else
 			{
-				m_TotalVelocity.y -= (m_FallAcceleration/2) * elapsedTime;
+				m_TotalVelocity.y -= (m_FallAcceleration / 2) * elapsedTime;
 			}
+			//Don't go over max fall speed
 			if (m_TotalVelocity.y < -m_CharacterDesc.maxFallSpeed)
 			{
 				m_TotalVelocity.y = -m_CharacterDesc.maxFallSpeed;
@@ -333,35 +426,43 @@ void Mario::Update(const SceneContext& sceneContext)
 		}
 		else if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer) && sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Jump))
 		{
+			m_MovementState = MovementState::JUMPING;
+
 			//Non long jump logic
 			if (!ducked)
 			{
+				//Double jump
 				m_TotalVelocity.y = m_CharacterDesc.JumpSpeed;
 				if (m_JustJumped && !m_ThirdJumpPrimed)
 				{
 					m_TotalVelocity.y += m_CharacterDesc.JumpSpeed;
 					m_ThirdJumpPrimed = true;
 				}
+				//Third jump
 				else if (m_ThirdJumpPrimed)
 				{
+					m_MovementState = MovementState::FRONTFLIP;
+
 					m_TotalVelocity.y += m_CharacterDesc.JumpSpeed * 2;
 				}
 				if (!m_ThirdJumpPrimed)
 					m_JustJumped = true;
 			}
 			//Long jump logic
-			else if(ducked && m_IsRunning)
+			else if (ducked && m_IsRunning)
 			{
 				m_TotalVelocity.y = m_CharacterDesc.JumpSpeed / 2;
-				m_TotalVelocity.x = m_MoveSpeed * m_CurrentDirection.x * m_LongJumpSpeed;
-				m_TotalVelocity.z = m_MoveSpeed * m_CurrentDirection.z * m_LongJumpSpeed;
-				m_MoveSpeed = cameraForward.x * m_CharacterDesc.maxMoveSpeed;
-				m_CurrentDirection = m_pControllerComponent->GetTransform()->GetForward();
+				m_TotalVelocity.x = m_MoveSpeed * m_pModelComponent->GetTransform()->GetForward().x * m_LongJumpSpeed;
+				m_TotalVelocity.z = m_MoveSpeed * m_pModelComponent->GetTransform()->GetForward().z * m_LongJumpSpeed;
+				m_MoveSpeed = m_CharacterDesc.maxMoveSpeed * 0.75f;
+				m_CurrentDirection = { -m_pModelComponent->GetTransform()->GetForward().x, m_pModelComponent->GetTransform()->GetForward().y, -m_pModelComponent->GetTransform()->GetForward().z };
 				m_LongJump = true;
 			}
 			//Backflip logic
-			else if(ducked)
+			else if (ducked)
 			{
+				m_MovementState = MovementState::BACKFLIP;
+
 				m_TotalVelocity.y = m_CharacterDesc.JumpSpeed * 1.5f;
 				m_TotalVelocity.x = m_MoveSpeed * -m_CurrentDirection.x * 25.f;
 				m_TotalVelocity.z = m_MoveSpeed * -m_CurrentDirection.z * 25.f;
@@ -404,6 +505,45 @@ void Mario::Update(const SceneContext& sceneContext)
 
 		//The above is a simple implementation of Movement Dynamics, adjust the code to further improve the movement logic and behaviour.
 		//Also, it can be usefull to use a seperate RayCast to check if the character is grounded (more responsive)
+		CheckStateChanged();
+	}
+}
+
+void Mario::CheckStateChanged()
+{
+	if (m_PreviousState != m_MovementState)
+	{
+		switch (m_MovementState)
+		{
+		case MovementState::IDLE:
+			m_pAnimator->SetAnimation(0);
+			m_PreviousState = m_MovementState;
+			break;
+		case MovementState::WALKING:
+			m_pAnimator->SetAnimation(6);
+			m_PreviousState = m_MovementState;
+			break;
+		case MovementState::RUNNING:
+			m_pAnimator->SetAnimation(5);
+			m_PreviousState = m_MovementState;
+			break;
+		case MovementState::FALLING:
+			m_pAnimator->SetAnimation(2);
+			m_PreviousState = m_MovementState;
+			break;
+		case MovementState::JUMPING:
+			m_pAnimator->SetAnimation(4);
+			m_PreviousState = m_MovementState;
+			break;
+		case MovementState::FRONTFLIP:
+			m_pAnimator->SetAnimation(3);
+			m_PreviousState = m_MovementState;
+			break;
+		case MovementState::BACKFLIP:
+			m_pAnimator->SetAnimation(1);
+			m_PreviousState = m_MovementState;
+			break;
+		}
 	}
 }
 

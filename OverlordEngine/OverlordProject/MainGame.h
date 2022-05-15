@@ -1,4 +1,6 @@
 #pragma once
+struct GameContext;
+#include "Base/OverlordGame.h"
 class MainGame final : public OverlordGame
 {
 public:
@@ -10,7 +12,7 @@ public:
 	MainGame& operator=(MainGame&& other) noexcept = delete;
 
 protected:
-	void OnGamePreparing(GameContext& gameContext) override;
+	void OnGamePreparing(const GameContext& gameContext) override;
 	void Initialize() override;
 	LRESULT WindowProcedureHook(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) override;
 };

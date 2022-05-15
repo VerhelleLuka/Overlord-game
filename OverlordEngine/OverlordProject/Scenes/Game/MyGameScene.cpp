@@ -4,6 +4,8 @@
 #include "Prefabs/Mario.h"
 #include "Prefabs/KoopaTroopa.h"
 #include "Materials/ColorMaterial.h"
+#include <Materials/PostPixelation.h>
+#include <Materials/PostGrayscale.h>
 
 void MyGameScene::Initialize()
 {
@@ -59,6 +61,40 @@ void MyGameScene::Initialize()
 
 	inputAction = InputAction(CharacterJump, InputState::pressed, VK_SPACE, -1, XINPUT_GAMEPAD_A);
 	m_SceneContext.pInput->AddInputAction(inputAction);
+
+	//Post processing effect
+	m_SceneInitialized = false;
+	m_NrPixels = 2;
+	m_pPixelation = MaterialManager::Get()->CreateMaterial<PostPixelation>();
+	AddPostProcessingEffect(m_pPixelation);
+	m_pPixelation->SetIsEnabled(true);
+	m_pPixelation->SetNrPixels(m_NrPixels);
+
+	//m_pGrayscale = MaterialManager::Get()->CreateMaterial<PostGrayscale>();
+	//AddPostProcessingEffect(m_pGrayscale);
+	//m_pGrayscale->SetIsEnabled(true);
+	m_pPixelation->IncreasePixelation();
+}
+
+void MyGameScene::Update()
+{
+	if (!m_SceneInitialized)
+	{
+		m_PixelationTimer += m_SceneContext.pGameTime->GetElapsed();
+		if (m_pPixelation->GetNrPixels() < 500)
+		{
+			if (m_PixelationTimer >= m_PixelationTime)
+			{
+				m_PixelationTimer = 0;
+				m_pPixelation->IncreasePixelation();
+			}
+		}
+		else
+		{
+			m_SceneInitialized = true;
+			m_pPixelation->SetIsEnabled(false);
+		}
+	}
 }
 
 void MyGameScene::OnGUI()

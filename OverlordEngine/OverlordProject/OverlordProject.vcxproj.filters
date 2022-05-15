@@ -31,6 +31,9 @@
     <ClCompile Include="Scenes\Game\MyGameScene.cpp" />
     <ClCompile Include="Prefabs\Character.cpp" />
     <ClCompile Include="Prefabs\KoopaTroopa.cpp" />
+    <ClCompile Include="Materials\PostPixelation.cpp" />
+    <ClCompile Include="Materials\PostBlur.cpp" />
+    <ClCompile Include="Materials\PostGrayscale.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -62,5 +65,8 @@
     <ClInclude Include="Scenes\Game\MyGameScene.h" />
     <ClInclude Include="Prefabs\Character.h" />
     <ClInclude Include="Prefabs\KoopaTroopa.h" />
+    <ClInclude Include="Materials\PostPixelation.h" />
+    <ClInclude Include="Materials\PostGrayscale.h" />
+    <ClInclude Include="Materials\PostBlur.h" />
   </ItemGroup>
 </Project>

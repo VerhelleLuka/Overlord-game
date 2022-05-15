@@ -7,6 +7,17 @@ enum class GameMode
 	THIRDPERSON
 };
 
+enum class MovementState
+{
+	IDLE,
+	WALKING,
+	RUNNING,
+	JUMPING,
+	FALLING,
+	BACKFLIP,
+	FRONTFLIP, 
+};
+
 class Mario : public GameObject
 {
 public:
@@ -44,11 +55,13 @@ private:
 	ModelComponent* m_pModelComponent;
 	//Rotation of the character mesh before camera rotation
 		//Animation stuff
-	ModelAnimator* pAnimator{};
+	ModelAnimator* m_pAnimator{};
 
 	int m_AnimationClipId{ 0 };
 	float m_AnimationSpeed{ 1.f };
 
+	bool m_WalkAnimSet = false;
+	bool m_RunAnimSet = false;
 	char** m_ClipNames{};
 	int m_ClipCount{};
 	//===============
@@ -74,5 +87,12 @@ private:
 	//Long jump
 	bool m_LongJump = false;
 	const float m_LongJumpSpeed = 25.f;
+
+	//State stuff
+	MovementState m_MovementState;
+	MovementState m_PreviousState;
+	bool m_MovementStateChanged;
+
+	void CheckStateChanged();
 };
 

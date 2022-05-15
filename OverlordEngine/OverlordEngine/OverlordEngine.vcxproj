@@ -109,6 +109,7 @@
     <ClInclude Include="Misc\ModelAnimator.h" />
     <ClInclude Include="Content\SpriteFontLoader.h" />
     <ClInclude Include="Graphics\TextRenderer.h" />
+    <ClInclude Include="Misc\PostProcessingMaterial.h" />
     <ClInclude Include="Prefabs\FixedCamera.h" />
     <ClInclude Include="Prefabs\FreeCamera.h" />
     <ClInclude Include="Utils\ImguiHelper.h">
@@ -174,6 +175,7 @@
     <ClCompile Include="Misc\ModelAnimator.cpp" />
     <ClCompile Include="Content\SpriteFontLoader.cpp" />
     <ClCompile Include="Graphics\TextRenderer.cpp" />
+    <ClCompile Include="Misc\PostProcessingMaterial.cpp" />
     <ClCompile Include="Prefabs\FixedCamera.cpp" />
     <ClCompile Include="Prefabs\FreeCamera.cpp" />
     <ClCompile Include="Utils\ImguiHelper.cpp" />

@@ -10,6 +10,7 @@
 //#define W8
 //#define W9
 //#define W10
+#define MyGame
 
 /*MILESTONE Content*/
 //#define MILESTONE_1
@@ -82,8 +83,13 @@
 #endif
 #pragma endregion
 
+#ifdef MyGame
+#include "Scenes/Game/MyGameScene.h"
+#endif
+#pragma endregion
+
 //Game is preparing
-void MainGame::OnGamePreparing(GameContext& /*gameContext*/)
+void MainGame::OnGamePreparing(const GameContext& /*gameContext*/)
 {
 	//Here you can change some game settings before engine initialize
 	//gameContext.windowWidth=... (default is 1280)
@@ -157,6 +163,9 @@ void MainGame::Initialize()
 	SceneManager::Get()->AddGameScene(new ShadowMappingScene());
 	SceneManager::Get()->AddGameScene(new ParticleScene());
 	SceneManager::Get()->AddGameScene(new PostProcessingScene());
+#endif
+#ifdef MyGame
+	SceneManager::Get()->AddGameScene(new MyGameScene());
 #endif
 }
 

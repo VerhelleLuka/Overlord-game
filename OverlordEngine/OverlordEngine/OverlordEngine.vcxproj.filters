@@ -50,6 +50,7 @@
     <ClCompile Include="Utils\VertexHelper.cpp" />
     <ClCompile Include="Managers\LightManager.cpp" />
     <ClCompile Include="Graphics\ShadowMapRenderer.cpp" />
+    <ClCompile Include="Misc\PostProcessingMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -111,5 +112,6 @@
     <ClInclude Include="Lab_Todos.h" />
     <ClInclude Include="Managers\LightManager.h" />
     <ClInclude Include="Graphics\ShadowMapRenderer.h" />
+    <ClInclude Include="Misc\PostProcessingMaterial.h" />
   </ItemGroup>
 </Project>
