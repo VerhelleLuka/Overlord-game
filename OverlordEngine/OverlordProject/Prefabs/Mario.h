@@ -94,5 +94,8 @@ private:
 	bool m_MovementStateChanged;
 
 	void CheckStateChanged();
+
+	bool m_IsGrounded;
+	float m_BackFlipSpeed = 25.f;
 };
 
