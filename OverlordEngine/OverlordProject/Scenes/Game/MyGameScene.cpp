@@ -84,6 +84,23 @@ void MyGameScene::Initialize()
 		m_pUI[i]->GetComponent<SpriteComponent>()->GetTransform()->Translate((m_SceneContext.windowWidth / 50.f) * ((i + 1) * 1.1f), m_SceneContext.windowHeight / 10.f, .9f);
 		m_pUI[i]->GetComponent<SpriteComponent>()->GetTransform()->Rotate(0, 0, (360.f / ((i % 2) + 1)), true);
 	}
+
+	//Particle 
+	ParticleEmitterSettings settings{};
+	settings.velocity = { 0.f,6.f,0.f };
+	settings.minSize = .5f;
+	settings.maxSize = .1f;
+	settings.minEnergy = 1.f;
+	settings.maxEnergy = 2.f;
+	settings.minScale = 1.f;
+	settings.maxScale = 2.f;
+	settings.minEmitterRadius = .2f;
+	settings.maxEmitterRadius = .5f;
+	settings.color = { 1.f,1.f,1.f, .6f };
+
+	m_pEmitter = m_pCharacter->AddComponent(new ParticleEmitterComponent(L"Textures/Smoke.png", settings, 100));
+	m_pCharacter->SetParticle(m_pEmitter);
+	
 }
 
 void MyGameScene::Update()

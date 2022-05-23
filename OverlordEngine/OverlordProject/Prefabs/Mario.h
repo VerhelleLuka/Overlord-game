@@ -32,6 +32,8 @@ public:
 	void DrawImGui();
 	void SetGameMode(GameMode gameMode);
 
+	void SetParticle(ParticleEmitterComponent* particle) { m_pParticle = particle; }
+
 protected:
 	void Initialize(const SceneContext&) override;
 	void Update(const SceneContext&) override;
@@ -82,7 +84,7 @@ private:
 
 	//Same logic but for triple jump
 	float m_LandedTimeTriple{}; //How long ago mario landed from single jump
-	const float m_MaxLandedTimeTriple{ 0.2f }; //Max amount of time mario can jump after landing to initiate double and/or triple jump
+	const float m_MaxLandedTimeTriple{ 0.3f }; //Max amount of time mario can jump after landing to initiate double and/or triple jump
 
 	//Long jump
 	bool m_LongJump = false;
@@ -97,5 +99,8 @@ private:
 
 	bool m_IsGrounded;
 	float m_BackFlipSpeed = 25.f;
+
+	//Particle reference
+	ParticleEmitterComponent* m_pParticle;
 };
 

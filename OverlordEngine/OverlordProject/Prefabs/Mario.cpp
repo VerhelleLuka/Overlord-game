@@ -201,7 +201,14 @@ void Mario::Update(const SceneContext& sceneContext)
 			isMoving = true;
 		}
 		auto moveAccell = m_MoveAcceleration * elapsedTime;
-
+		if (isMoving)
+		{
+			m_pParticle->SetActive(true);
+		}
+		else
+		{
+			m_pParticle->SetActive(false);
+		}
 		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Run))
 		{
 			m_IsRunning = true;
@@ -214,7 +221,7 @@ void Mario::Update(const SceneContext& sceneContext)
 			PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
 			m_pControllerComponent->GetFootPosition().y,
 			m_pControllerComponent->GetFootPosition().z };
-			if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .25f, raycastBuffer))
+			if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer))
 			{
 				m_MovementState = MovementState::RUNNING;
 			}
@@ -233,7 +240,7 @@ void Mario::Update(const SceneContext& sceneContext)
 				PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
 				m_pControllerComponent->GetFootPosition().y,
 				m_pControllerComponent->GetFootPosition().z };
-				if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .25f, raycastBuffer))
+				if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer))
 				{
 					m_MovementState = MovementState::WALKING;
 				}
@@ -316,7 +323,7 @@ void Mario::Update(const SceneContext& sceneContext)
 		//Else If the jump action is triggered
 
 		//This part is very fragile with all the booleans, please don't mess with it --
-		if (!SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .25f, raycastBuffer))
+		if (!SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer))
 		{
 			m_IsGrounded = false;
 			//If the character is going down, set him to fall
@@ -361,7 +368,7 @@ void Mario::Update(const SceneContext& sceneContext)
 				}
 			}
 		}
-		else if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .25f, raycastBuffer) && sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Jump))
+		else if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer) && sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Jump))
 		{
 			m_IsGrounded = false;
 			m_MovementState = MovementState::JUMPING;
@@ -475,7 +482,7 @@ void Mario::CheckStateChanged()
 			break;
 		case MovementState::JUMPING:
 			m_pAnimator->SetAnimation(4);
-			
+
 			m_PreviousState = m_MovementState;
 			break;
 		case MovementState::FRONTFLIP:

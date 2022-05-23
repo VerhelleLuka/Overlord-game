@@ -45,6 +45,8 @@ public:
 	ParticleEmitterSettings& GetSettings() { return m_EmitterSettings; }; //EmitterSettings Getter (by reference) > allows settings changes
 	void DrawImGui();
 
+	void SetActive(bool active) { m_IsActive = active; }
+	
 protected:
 	void Initialize(const SceneContext&) override;
 	void Update(const SceneContext&) override;
@@ -69,5 +71,8 @@ private:
 	std::wstring m_AssetFile{};
 
 	bool m_DrawImGui{ false };
+	float m_LastParticleInit;
+
+	bool m_IsActive;
 };
 

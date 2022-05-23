@@ -30,6 +30,7 @@ private:
 	};
 
 	Mario* m_pCharacter{};
+	ParticleEmitterComponent* m_pEmitter;
 	PostPixelation* m_pPixelation;
 	PostGrayscale* m_pGrayscale;
 	bool m_SceneInitialized;
