@@ -13,6 +13,7 @@ public:
 	ID3D11Resource* GetResource() const { return m_pTexture; }
 	ID3D11ShaderResourceView* GetShaderResourceView() const { return m_pTextureShaderResourceView; }
 	const XMFLOAT2& GetDimension() const { return m_Dimension; }
+	void SetDimenson(const XMFLOAT2& dimension) { m_Dimension = dimension; }
 	const std::wstring& GetAssetSubPath() const { return m_AssetSubPath; }
 
 	static void CreateGUID();

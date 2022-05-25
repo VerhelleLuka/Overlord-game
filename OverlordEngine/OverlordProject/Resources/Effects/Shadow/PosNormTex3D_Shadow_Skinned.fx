@@ -72,13 +72,13 @@ VS_OUTPUT VS(VS_INPUT input)
 		if (index > -1)
 		{
 			transformedPosition += mul(originalPosition, gBones[index]) * input.BoneWeights[i];
-			transformedNormal += input.normal * input.BoneWeights[i];
+			transformedNormal += mul(input.normal, (float3x3)gBones[index]) * input.BoneWeights[i];
 		}
 	}
 	transformedPosition.w = 1;
 
 	output.pos = mul(transformedPosition, gWorldViewProj);
-	output.normal = mul(transformedNormal, (float3x3)gWorldViewProj);
+	output.normal = transformedNormal;
 	output.texCoord = input.texCoord;
 	output.lPos = mul(transformedPosition, gWorldViewProj_Light);
 	return output;
@@ -99,7 +99,7 @@ float EvaluateShadowMap(float4 lPos, float3 normal)
 	//if position is not visible to the light - dont illuminate it
 	if (lPos.x < -1.0f || lPos.x > 1.0f ||
 		lPos.y < -1.0f || lPos.y > 1.0f ||
-		lPos.z < 0.0f || lPos.z > 1.0f) return 0;
+		lPos.z < 0.0f || lPos.z > 1.0f) return 1.0f;
 
 	lPos.x = lPos.x / 2 + 0.5;
 	lPos.y = lPos.y / -2 + 0.5;
@@ -121,9 +121,9 @@ float EvaluateShadowMap(float4 lPos, float3 normal)
 
 
 	//calculate ilumination at fragment
-	float3 L = normalize( - gLightDirection);
-	float ndotl = dot(normalize(normal), L);
-	return shadowFactor * ndotl + 0.5f;
+	//float3 L = normalize( gLightDirection);
+	//float ndotl = dot(normalize(normal), L);
+	return shadowFactor * 0.5f + 0.5f;
 }
 
 //--------------------------------------------------------------------------------------

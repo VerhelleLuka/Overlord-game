@@ -18,6 +18,7 @@ public:
 	void SetPivot(const XMFLOAT2& pivot) { m_Pivot = pivot; }
 	void SetColor(const XMFLOAT4& color) { m_Color = color; }
 	void SetTexture(const std::wstring& spriteAsset);
+	TextureData* GetTexture() const { return m_pTexture; }
 	void Enable(bool enable) { m_Enabled = enable; }
 	bool IsEnabled() const { return m_Enabled; }
 

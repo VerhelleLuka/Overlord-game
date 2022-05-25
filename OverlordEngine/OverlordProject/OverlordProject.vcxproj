@@ -110,6 +110,7 @@
     <ClCompile Include="Prefabs\SpherePrefab.cpp" />
     <ClCompile Include="Prefabs\TorusPrefab.cpp" />
     <ClCompile Include="Materials\ColorMaterial.cpp" />
+    <ClCompile Include="Scenes\Game\MainMenu.cpp" />
     <ClCompile Include="Scenes\Game\MyGameScene.cpp" />
     <ClCompile Include="Scenes\Week 3\ComponentTestScene.cpp" />
     <ClCompile Include="Scenes\Week 3\MinionScene.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="Prefabs\SpherePrefab.h" />
     <ClInclude Include="Prefabs\TorusPrefab.h" />
     <ClInclude Include="Materials\ColorMaterial.h" />
+    <ClInclude Include="Scenes\Game\MainMenu.h" />
     <ClInclude Include="Scenes\Game\MyGameScene.h" />
     <ClInclude Include="Scenes\Week 3\ComponentTestScene.h" />
     <ClInclude Include="Scenes\Week 3\MinionScene.h" />

@@ -22,7 +22,7 @@ class Mario : public GameObject
 {
 public:
 	Mario(const CharacterDesc& characterDesc/*, ModelComponent* modelComp */);
-	~Mario() override = default;
+	~Mario() override;
 
 	Mario(const Mario& other) = delete;
 	Mario(Mario&& other) noexcept = delete;
@@ -33,13 +33,17 @@ public:
 	void SetGameMode(GameMode gameMode);
 
 	void SetParticle(ParticleEmitterComponent* particle) { m_pParticle = particle; }
+	bool GetPaused() const { return m_IsPaused; }
+	void SetPaused(bool isPaused) { m_IsPaused = isPaused; }
 
 protected:
 	void Initialize(const SceneContext&) override;
 	void Update(const SceneContext&) override;
 
 private:
+	//Camera
 	CameraComponent* m_pCameraComponent{};
+	const float m_CameraDistance{ -15.f };
 	ControllerComponent* m_pControllerComponent{};
 
 	CharacterDesc m_CharacterDesc;
@@ -104,7 +108,10 @@ private:
 	ParticleEmitterComponent* m_pParticle;
 
 	//Other stuff
-	const float m_yPosOffset = -0.65f;
+	const float m_yPosOffset = -.9f;
 	const float m_Scale = 0.005f;
+
+	//For pause menu
+	bool m_IsPaused;
 };
 

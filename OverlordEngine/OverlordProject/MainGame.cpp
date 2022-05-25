@@ -85,6 +85,7 @@
 
 #ifdef MyGame
 #include "Scenes/Game/MyGameScene.h"
+#include "Scenes/Game/MainMenu.h"
 #endif
 #pragma endregion
 
@@ -166,6 +167,7 @@ void MainGame::Initialize()
 #endif
 #ifdef MyGame
 	SceneManager::Get()->AddGameScene(new MyGameScene());
+	SceneManager::Get()->AddGameScene(new MainMenu());
 #endif
 }
 

@@ -130,7 +130,10 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 	float4 diffuseColor = gDiffuseMap.Sample(samLinear,input.texCoord);
 	float3 color_rgb = diffuseColor.rgb;
 	float color_a = diffuseColor.a;
-
+	if (color_a < 0.2f)
+	{
+		discard;
+	}
 	//HalfLambert Diffuse :)
 	float diffuseStrength = dot(input.normal, -gLightDirection);
 	diffuseStrength = diffuseStrength * 0.5 + 0.5;

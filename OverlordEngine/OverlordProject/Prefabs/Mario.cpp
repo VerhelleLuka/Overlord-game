@@ -8,10 +8,20 @@
 Mario::Mario(const CharacterDesc& characterDesc) :
 	m_CharacterDesc{ characterDesc },
 	m_MoveAcceleration(characterDesc.maxMoveSpeed / characterDesc.moveAccelerationTime),
-	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime)
+	m_FallAcceleration(characterDesc.maxFallSpeed / characterDesc.fallAccelerationTime),
+	m_IsPaused(false)
 
 {}
 
+Mario::~Mario()
+{
+	for (int i{ 0 }; i < m_ClipCount; ++i)
+	{
+		delete[] m_ClipNames[i];
+	}
+
+	delete[] m_ClipNames;
+}
 void Mario::Initialize(const SceneContext& sceneContext)
 {
 	//Mesh
@@ -19,7 +29,6 @@ void Mario::Initialize(const SceneContext& sceneContext)
 	auto pMarioMesh = pMarioObject->AddComponent(new ModelComponent(L"Meshes/Mario/Mario.ovm"));
 	pMarioMesh->SetMaterial(MaterialManager::Get()->CreateMaterial<ColorMaterial>());
 	pMarioObject->GetTransform()->Translate(0, m_yPosOffset, 0);
-	pMarioMesh->GetTransform()->Rotate(0.f, 0.f, 0.f);
 	pMarioObject->GetTransform()->Scale(m_Scale);
 	m_pModelComponent = pMarioMesh;
 	AddChild(pMarioObject);
@@ -98,7 +107,7 @@ void Mario::Initialize(const SceneContext& sceneContext)
 
 void Mario::Update(const SceneContext& sceneContext)
 {
-	if (m_pCameraComponent->IsActive())
+	if (m_pCameraComponent->IsActive() && !m_IsPaused)
 	{
 		if ((m_MovementState != MovementState::JUMPING && m_MovementState != MovementState::BACKFLIP && m_MovementState != MovementState::FRONTFLIP) ||
 			m_IsGrounded)
@@ -157,10 +166,10 @@ void Mario::Update(const SceneContext& sceneContext)
 				m_TotalPitch = m_MaxPitch;
 
 			}
-			// *-1 to get inverse forward vecter *20 to get distance
-			cameraForward.x *= -10.f;
-			cameraForward.y *= -10.f;
-			cameraForward.z *= -10.f;
+			// *-1 to get inverse forward vecter *15 to get distance
+			cameraForward.x *= m_CameraDistance;
+			cameraForward.y *= m_CameraDistance;
+			cameraForward.z *= m_CameraDistance;
 			//float distance = 20.f;
 			m_pCameraComponent->GetTransform()->Translate(GetTransform()->GetPosition().x, GetTransform()->GetPosition().y, GetTransform()->GetPosition().z);
 			m_pCameraComponent->GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
@@ -168,6 +177,21 @@ void Mario::Update(const SceneContext& sceneContext)
 			//cameraForward.y += GetTransform()->GetPosition().y;
 			//cameraForward.z += GetTransform()->GetPosition().z;
 			m_pCameraComponent->GetTransform()->Translate(cameraForward);
+
+
+			PxRaycastBuffer raycastBuffer;
+			PxVec3 origin = { m_pCameraComponent->GetTransform()->GetPosition().x,
+			m_pCameraComponent->GetTransform()->GetPosition().y,
+			m_pCameraComponent->GetTransform()->GetPosition().z };
+			PxVec3 direction = { m_pCameraComponent->GetTransform()->GetForward().x,
+			m_pCameraComponent->GetTransform()->GetForward().y,
+			m_pCameraComponent->GetTransform()->GetForward().z };
+
+			if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, direction,
+				(m_CameraDistance * -1) - 3, raycastBuffer))
+			{
+				//std::cout << "Shit cam\n";
+			}
 		}
 		else
 		{
@@ -453,7 +477,7 @@ void Mario::Update(const SceneContext& sceneContext)
 			m_TotalVelocity.y = 0;
 		}
 		//Do another raycast to check if the character should be falling because .25f is too shallow
-		std::cout << m_TotalVelocity.x << " " << m_TotalVelocity.y << " " << m_TotalVelocity.z <<" "<<m_MoveSpeed << " \n";
+		//std::cout << m_TotalVelocity.x << " " << m_TotalVelocity.y << " " << m_TotalVelocity.z <<" "<<m_MoveSpeed << " \n";
 		//Finnicky till here
 		// 
 		//************
