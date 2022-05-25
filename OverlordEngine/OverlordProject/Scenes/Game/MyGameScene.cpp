@@ -36,12 +36,14 @@ void MyGameScene::Initialize()
 	//pKoopaTroopa->GetTransform()->Translate(0.f, 25.f, 0.f);
 	//pKoopaTroopa->GetTransform()->Scale(100.f);
 	//AddChild(pKoopaTroopa);
+	
 	//Simple Level
 	const auto pLevelObject = AddChild(new GameObject());
 	const auto pLevelMesh = pLevelObject->AddComponent(new ModelComponent(L"Meshes/Bobomb_Battlefield.ovm"));
 	pLevelMesh->SetMaterial(MaterialManager::Get()->CreateMaterial<ColorMaterial>());
 
 	const auto pLevelActor = pLevelObject->AddComponent(new RigidBodyComponent(true));
+	pLevelObject->GetComponent<RigidBodyComponent>()->GetTransform()->Scale(0.5f, 0.5f, 0.5f);
 	const auto pPxTriangleMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Bobomb_Battlefield.ovpt");
 	pLevelActor->AddCollider(PxTriangleMeshGeometry(pPxTriangleMesh, PxMeshScale({ 1.f, 1.f, 1.f })), *pDefaultMaterial);
 	pLevelObject->GetTransform()->Scale(1.f, 1.f, 1.f);
@@ -74,7 +76,6 @@ void MyGameScene::Initialize()
 	//AddPostProcessingEffect(m_pGrayscale);
 	//m_pGrayscale->SetIsEnabled(true);
 	m_pPixelation->IncreasePixelation();
-
 	//Sprite
 	for (int i{}; i < 6; ++i)
 	{
@@ -87,20 +88,22 @@ void MyGameScene::Initialize()
 
 	//Particle 
 	ParticleEmitterSettings settings{};
-	settings.velocity = { 0.f,6.f,0.f };
-	settings.minSize = .5f;
-	settings.maxSize = .1f;
-	settings.minEnergy = 1.f;
-	settings.maxEnergy = 2.f;
-	settings.minScale = 1.f;
-	settings.maxScale = 2.f;
+	settings.velocity = { 1.f,1.f,1.f };
+	settings.minSize = .1f;
+	settings.maxSize = .5f;
+	settings.minEnergy = .5f;
+	settings.maxEnergy = 1.f;
+	settings.minScale = .5f;
+	settings.maxScale = 1.f;
 	settings.minEmitterRadius = .2f;
 	settings.maxEmitterRadius = .5f;
 	settings.color = { 1.f,1.f,1.f, .6f };
 
-	m_pEmitter = m_pCharacter->AddComponent(new ParticleEmitterComponent(L"Textures/Smoke.png", settings, 100));
+	m_pEmitter = m_pCharacter->AddComponent(new ParticleEmitterComponent(L"Textures/Jump.png", settings, 10));
 	m_pCharacter->SetParticle(m_pEmitter);
-	
+
+	//Light
+	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
 }
 
 void MyGameScene::Update()

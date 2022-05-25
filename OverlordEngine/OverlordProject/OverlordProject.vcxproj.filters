@@ -34,6 +34,8 @@
     <ClCompile Include="Materials\PostPixelation.cpp" />
     <ClCompile Include="Materials\PostBlur.cpp" />
     <ClCompile Include="Materials\PostGrayscale.cpp" />
+    <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow.cpp" />
+    <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -68,5 +70,7 @@
     <ClInclude Include="Materials\PostPixelation.h" />
     <ClInclude Include="Materials\PostGrayscale.h" />
     <ClInclude Include="Materials\PostBlur.h" />
+    <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.h" />
+    <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@
 #include <Materials/DiffuseMaterial_Skinned.h>
 #include <Materials/ColorMaterial.h>
 #include <Materials/DiffuseMaterial.h>
+#include <Materials/Shadow/DiffuseMaterial_Shadow_Skinned.h>
 
 Mario::Mario(const CharacterDesc& characterDesc) :
 	m_CharacterDesc{ characterDesc },
@@ -17,9 +18,9 @@ void Mario::Initialize(const SceneContext& sceneContext)
 	const auto pMarioObject = new GameObject;
 	auto pMarioMesh = pMarioObject->AddComponent(new ModelComponent(L"Meshes/Mario/Mario.ovm"));
 	pMarioMesh->SetMaterial(MaterialManager::Get()->CreateMaterial<ColorMaterial>());
-
-	pMarioMesh->GetTransform()->Rotate(0.f, 180.f, 0.f);
-	pMarioObject->GetTransform()->Scale(0.005f);
+	pMarioObject->GetTransform()->Translate(0, m_yPosOffset, 0);
+	pMarioMesh->GetTransform()->Rotate(0.f, 0.f, 0.f);
+	pMarioObject->GetTransform()->Scale(m_Scale);
 	m_pModelComponent = pMarioMesh;
 	AddChild(pMarioObject);
 
@@ -52,7 +53,7 @@ void Mario::Initialize(const SceneContext& sceneContext)
 	sceneContext.pInput->AddInputAction(action);
 
 	//Texture
-	const auto pSkinnedMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Skinned>();
+	const auto pSkinnedMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow_Skinned>();
 	pSkinnedMaterial->SetDiffuseTexture(L"Textures/Mario_UV.png");
 
 	m_pModelComponent->SetMaterial(pSkinnedMaterial);
@@ -79,8 +80,8 @@ void Mario::Initialize(const SceneContext& sceneContext)
 
 	//Set foot position 1.6 higher due to offset
 	PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
-m_pControllerComponent->GetFootPosition().y,
-m_pControllerComponent->GetFootPosition().z };
+	m_pControllerComponent->GetFootPosition().y,
+	m_pControllerComponent->GetFootPosition().z };
 	origin.y += 1.6f;
 	PxExtendedVec3 origin2;
 	origin2.x = origin.x;
@@ -92,6 +93,7 @@ m_pControllerComponent->GetFootPosition().z };
 	//SoundManager::Get()->GetSystem()->playSound()
 	m_PreviousState = MovementState::IDLE;
 	m_MovementState = MovementState::IDLE;
+
 }
 
 void Mario::Update(const SceneContext& sceneContext)
@@ -175,7 +177,6 @@ void Mario::Update(const SceneContext& sceneContext)
 		//MOVEMENT
 		//## Horizontal Velocity (Forward/Backward/Right/Left)
 		//Calculate the current move acceleration for this frame (m_MoveAcceleration * ElapsedTime)
-
 		bool isMoving = false;
 		XMFLOAT3 moveInput{};
 		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_MoveForward))
@@ -215,7 +216,7 @@ void Mario::Update(const SceneContext& sceneContext)
 			moveAccell *= 2;
 			moveAccell *= 2;
 			m_CharacterDesc.maxMoveSpeed = m_RunSpeed;
-
+			m_pParticle->SetActive(true);
 			//Don't run if not touching ground
 			PxRaycastBuffer raycastBuffer;
 			PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
@@ -223,6 +224,7 @@ void Mario::Update(const SceneContext& sceneContext)
 			m_pControllerComponent->GetFootPosition().z };
 			if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer))
 			{
+
 				m_MovementState = MovementState::RUNNING;
 			}
 			if (!m_RunAnimSet)
@@ -260,7 +262,6 @@ void Mario::Update(const SceneContext& sceneContext)
 			{
 				m_MoveSpeed = m_CharacterDesc.maxMoveSpeed;
 			}
-
 		}
 		//PLAYER ROTATION
 		if (isMoving)
@@ -274,7 +275,7 @@ void Mario::Update(const SceneContext& sceneContext)
 			auto movementTotal = movementForward + movementRight;
 			float rotAngle = -atan2(XMVectorGetZ(movementTotal), XMVectorGetX(movementTotal));
 			//Convert to degrees
-			rotAngle = (rotAngle * 180.f) / 3.1415f;
+			rotAngle = XMConvertToDegrees(rotAngle);
 			m_pModelComponent->GetTransform()->Rotate(0.f, rotAngle - 90.f, 0.f);
 		}
 		//Else (character is not moving, or stopped moving)
@@ -302,8 +303,11 @@ void Mario::Update(const SceneContext& sceneContext)
 
 		//Set the x/z component of m_TotalVelocity (horizontal_velocity x/z)
 		//It's important that you don't overwrite the y component of m_TotalVelocity (contains the vertical velocity)
-		m_TotalVelocity.x = horizontalVelocity.x;
-		m_TotalVelocity.z = horizontalVelocity.y;
+		if (!m_LongJump)
+		{
+			m_TotalVelocity.x = horizontalVelocity.x;
+			m_TotalVelocity.z = horizontalVelocity.y;
+		}
 
 
 		//## Vertical Movement (Jump/Fall)
@@ -325,6 +329,8 @@ void Mario::Update(const SceneContext& sceneContext)
 		//This part is very fragile with all the booleans, please don't mess with it --
 		if (!SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer))
 		{
+			m_pParticle->SetActive(false);
+
 			m_IsGrounded = false;
 			//If the character is going down, set him to fall
 			if (m_TotalVelocity.y < 0)
@@ -332,6 +338,7 @@ void Mario::Update(const SceneContext& sceneContext)
 
 				if (m_MovementState != MovementState::FRONTFLIP && m_MovementState != MovementState::BACKFLIP)
 					m_MovementState = MovementState::FALLING;
+
 			}
 			//Falling
 			if (!m_LongJump)
@@ -373,6 +380,9 @@ void Mario::Update(const SceneContext& sceneContext)
 			m_IsGrounded = false;
 			m_MovementState = MovementState::JUMPING;
 
+			m_pParticle->SetActive(true);
+			m_pParticle->SpawnNrOfParticles(50, sceneContext);
+			m_pParticle->SetActive(false);
 			//Non long jump logic
 			if (!ducked)
 			{
@@ -397,10 +407,10 @@ void Mario::Update(const SceneContext& sceneContext)
 			else if (ducked && m_IsRunning)
 			{
 				m_TotalVelocity.y = m_CharacterDesc.JumpSpeed / 2;
+				m_MoveSpeed = 7.5f;
 				m_TotalVelocity.x = -m_MoveSpeed * m_pModelComponent->GetTransform()->GetForward().x * m_LongJumpSpeed;
 				m_TotalVelocity.z = -m_MoveSpeed * m_pModelComponent->GetTransform()->GetForward().z * m_LongJumpSpeed;
 				m_MoveSpeed = m_CharacterDesc.maxMoveSpeed * 0.75f;
-				m_CurrentDirection = { m_pModelComponent->GetTransform()->GetForward().x, m_pModelComponent->GetTransform()->GetForward().y,m_pModelComponent->GetTransform()->GetForward().z };
 				m_LongJump = true;
 			}
 			//Backflip logic
@@ -415,6 +425,7 @@ void Mario::Update(const SceneContext& sceneContext)
 		}
 		else
 		{
+			m_pParticle->SetActive(false);
 			m_IsGrounded = true;
 			m_LongJump = false;
 			if (m_JustJumped)
@@ -442,7 +453,7 @@ void Mario::Update(const SceneContext& sceneContext)
 			m_TotalVelocity.y = 0;
 		}
 		//Do another raycast to check if the character should be falling because .25f is too shallow
-
+		std::cout << m_TotalVelocity.x << " " << m_TotalVelocity.y << " " << m_TotalVelocity.z <<" "<<m_MoveSpeed << " \n";
 		//Finnicky till here
 		// 
 		//************

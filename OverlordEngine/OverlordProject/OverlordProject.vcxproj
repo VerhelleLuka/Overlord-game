@@ -98,6 +98,8 @@
     <ClCompile Include="Materials\PostBlur.cpp" />
     <ClCompile Include="Materials\PostGrayscale.cpp" />
     <ClCompile Include="Materials\PostPixelation.cpp" />
+    <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow.cpp" />
+    <ClCompile Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.cpp" />
     <ClCompile Include="Materials\SpikyMaterial.cpp" />
     <ClCompile Include="Materials\UberMaterial.cpp" />
     <ClCompile Include="Prefabs\BoneObject.cpp" />
@@ -150,6 +152,8 @@
     <ClInclude Include="Materials\PostBlur.h" />
     <ClInclude Include="Materials\PostGrayscale.h" />
     <ClInclude Include="Materials\PostPixelation.h" />
+    <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow.h" />
+    <ClInclude Include="Materials\Shadow\DiffuseMaterial_Shadow_Skinned.h" />
     <ClInclude Include="Materials\SpikyMaterial.h" />
     <ClInclude Include="Materials\UberMaterial.h" />
     <ClInclude Include="Prefabs\BoneObject.h" />

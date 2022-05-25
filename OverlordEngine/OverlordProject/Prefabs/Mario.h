@@ -88,7 +88,7 @@ private:
 
 	//Long jump
 	bool m_LongJump = false;
-	const float m_LongJumpSpeed = 25.f;
+	const float m_LongJumpSpeed = 2.5f;
 
 	//State stuff
 	MovementState m_MovementState;
@@ -102,5 +102,9 @@ private:
 
 	//Particle reference
 	ParticleEmitterComponent* m_pParticle;
+
+	//Other stuff
+	const float m_yPosOffset = -0.65f;
+	const float m_Scale = 0.005f;
 };
 

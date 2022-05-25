@@ -53,6 +53,7 @@
     <ClCompile Include="Misc\PostProcessingMaterial.cpp" />
     <ClCompile Include="Components\ParticleEmitterComponent.cpp" />
     <ClCompile Include="Misc\ParticleMaterial.cpp" />
+    <ClCompile Include="Misc\ShadowMapMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -117,5 +118,6 @@
     <ClInclude Include="Misc\PostProcessingMaterial.h" />
     <ClInclude Include="Components\ParticleEmitterComponent.h" />
     <ClInclude Include="Misc\ParticleMaterial.h" />
+    <ClInclude Include="Misc\ShadowMapMaterial.h" />
   </ItemGroup>
 </Project>

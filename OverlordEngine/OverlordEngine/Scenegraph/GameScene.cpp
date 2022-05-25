@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "GameScene.h"
 
-GameScene::GameScene(std::wstring sceneName):
+GameScene::GameScene(std::wstring sceneName) :
 	m_SceneName(std::move(sceneName))
 {
 }
@@ -64,7 +64,7 @@ void GameScene::RemoveChild(GameObject* pObject, bool deleteObject)
 	if (deleteObject)
 	{
 		SafeDelete(pObject);
-	}		
+	}
 }
 
 void GameScene::RootInitialize(const GameContext& gameContext)
@@ -154,17 +154,24 @@ void GameScene::RootDraw()
 #pragma region SHADOW PASS
 	//SHADOW_PASS
 	//+++++++++++
-	TODO_W8(L"Implement Shadow Pass")
-	//1. BEGIN > ShadowMapRenderer::Begin (Initiate the ShadowPass)
-	//2. DRAW_LOOP > For every GameObject (m_pChildren), call GameObject::RootShadowMapDraw
-	//3. END > ShadowMapRenderer::End (Terminate the ShadowPass)
+	//TODO_W8(L"Implement Shadow Pass")
+		//1. BEGIN > ShadowMapRenderer::Begin (Initiate the ShadowPass)
+		ShadowMapRenderer::Get()->Begin(m_SceneContext);
+		//2. DRAW_LOOP > For every GameObject (m_pChildren), call GameObject::RootShadowMapDraw
+	for (int i{}; i < m_pChildren.size(); ++i)
+	{
+		m_pChildren[i]->RootShadowMapDraw(m_SceneContext);
+	}
+		//3. END > ShadowMapRenderer::End (Terminate the ShadowPass)
+	ShadowMapRenderer::Get()->End(m_SceneContext);
+
 #pragma endregion
 
 #pragma region USER PASS
 	//USER_PASS
 	//+++++++++
 	//User-Scene Draw
-	Draw();
+		Draw();
 
 	//Object-Scene Draw
 	for (const auto pChild : m_pChildren)
@@ -205,7 +212,7 @@ void GameScene::RootDraw()
 		auto renderTarget = m_pGame->GetRenderTarget();
 		auto initialTarget = m_pGame->GetRenderTarget();
 		//2. Iterate the vector of PostProcessingMaterials (m_PostProcessingMaterials)
-
+		
 		//For Each Material
 		for (int i{}; i < m_PostProcessingMaterials.size(); ++i)
 		{
@@ -231,14 +238,14 @@ void GameScene::RootDraw()
 		{
 			m_pGame->SetRenderTarget(nullptr);
 			SpriteRenderer::Get()->DrawImmediate(m_SceneContext.d3dContext, renderTarget->GetColorShaderResourceView(), {});
-
+		
 		}
 		else
 		{
 			return;
 		}
 		//		- Use SpriteRenderer::DrawImmediate to render the ShaderResourceView from PREV_RT to the screen
-
+		
 		//Done!
 	}
 #pragma endregion
@@ -396,7 +403,7 @@ void GameScene::RemovePostProcessingEffect(PostProcessingMaterial* pMaterial)
 	if (std::ranges::find(m_PostProcessingMaterials, pMaterial) != m_PostProcessingMaterials.end())
 		m_PostProcessingMaterials.erase(std::ranges::remove(m_PostProcessingMaterials, pMaterial).begin());
 }
- 
+
 void GameScene::SetActiveCamera(CameraComponent* pCameraComponent)
 {
 	//Prevent recursion!

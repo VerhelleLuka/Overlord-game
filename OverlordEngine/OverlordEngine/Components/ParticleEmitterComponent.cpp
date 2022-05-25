@@ -43,7 +43,13 @@ void ParticleEmitterComponent::CreateVertexBuffer(const SceneContext& sceneConte
 	bufferDesc.MiscFlags = 0;
 	sceneContext.d3dContext.pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pVertexBuffer);
 }
-
+void ParticleEmitterComponent::SpawnNrOfParticles(int amount, const SceneContext& sceneContext)
+{
+	for (int i{}; i < amount; ++i)
+	{
+		Update(sceneContext);
+	}
+}
 void ParticleEmitterComponent::Update(const SceneContext& sceneContext)
 {
 	float particleInterval = (m_EmitterSettings.maxEnergy - m_EmitterSettings.minEnergy) / m_ParticleCount;

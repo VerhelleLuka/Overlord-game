@@ -46,7 +46,7 @@ public:
 	void DrawImGui();
 
 	void SetActive(bool active) { m_IsActive = active; }
-	
+	void SpawnNrOfParticles(int amount, const SceneContext& sceneContext);
 protected:
 	void Initialize(const SceneContext&) override;
 	void Update(const SceneContext&) override;

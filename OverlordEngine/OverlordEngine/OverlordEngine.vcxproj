@@ -112,6 +112,7 @@
     <ClInclude Include="Graphics\TextRenderer.h" />
     <ClInclude Include="Misc\ParticleMaterial.h" />
     <ClInclude Include="Misc\PostProcessingMaterial.h" />
+    <ClInclude Include="Misc\ShadowMapMaterial.h" />
     <ClInclude Include="Prefabs\FixedCamera.h" />
     <ClInclude Include="Prefabs\FreeCamera.h" />
     <ClInclude Include="Utils\ImguiHelper.h">
@@ -180,6 +181,7 @@
     <ClCompile Include="Graphics\TextRenderer.cpp" />
     <ClCompile Include="Misc\ParticleMaterial.cpp" />
     <ClCompile Include="Misc\PostProcessingMaterial.cpp" />
+    <ClCompile Include="Misc\ShadowMapMaterial.cpp" />
     <ClCompile Include="Prefabs\FixedCamera.cpp" />
     <ClCompile Include="Prefabs\FreeCamera.cpp" />
     <ClCompile Include="Utils\ImguiHelper.cpp" />
