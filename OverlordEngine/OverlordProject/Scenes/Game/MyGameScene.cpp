@@ -7,6 +7,7 @@
 #include <Materials/PostGrayscale.h>
 #include "Components/SpriteComponent.h"
 #include <Materials/Shadow/DiffuseMaterial_Shadow.h>
+#include "Prefabs/Star.h"
 void MyGameScene::Initialize()
 {
 	m_SceneContext.settings.enableOnGUI = true;
@@ -103,6 +104,15 @@ void MyGameScene::Initialize()
 	pPauseGo->AddComponent(m_pPauseMenu);
 	m_pPauseMenu->Enable(false);
 	AddChild(pPauseGo);
+
+	//Star
+	auto pStarGo = new Star();
+	AddChild(pStarGo);
+	auto starBody = pStarGo->AddComponent(new RigidBodyComponent());
+	starBody->AddCollider(PxBoxGeometry{ 1.f, 1.f, 1.f }, *pDefaultMaterial, true);
+	pStarGo->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	//starBody->SetKinematic(true);	
+	pStarGo->GetTransform()->Translate(m_OriginalPosition);
 }
 
 void MyGameScene::CreateLevel()
@@ -249,6 +259,10 @@ void MyGameScene::Update()
 		m_pPauseMenu->Enable(false);
 		SceneManager::Get()->PreviousScene();
 	}
+	if (m_pCharacter->GetComponent<RigidBodyComponent>(true))
+	{
+		std::cout << "Has rigid body\n";
+	}
 }
 
 void MyGameScene::OnGUI()
@@ -256,4 +270,9 @@ void MyGameScene::OnGUI()
 	//ImGui::SliderInt("foij", &m_MaterialID, 0, 22);
 	//m_pLevelMode->SetMaterial(m_pMat, UINT8(m_MaterialID));
 
+}
+
+void MyGameScene::OnTriggerCallBack(GameObject* /*pTriggerObject*/, GameObject* /*pOtherObject*/, PxTriggerAction /*action*/)
+{
+	std::cout << "Star colliding!\n";
 }

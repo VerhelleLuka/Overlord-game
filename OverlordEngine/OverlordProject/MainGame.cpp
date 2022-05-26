@@ -166,8 +166,8 @@ void MainGame::Initialize()
 	SceneManager::Get()->AddGameScene(new PostProcessingScene());
 #endif
 #ifdef MyGame
-	SceneManager::Get()->AddGameScene(new MyGameScene());
 	SceneManager::Get()->AddGameScene(new MainMenu());
+	SceneManager::Get()->AddGameScene(new MyGameScene());
 #endif
 }
 

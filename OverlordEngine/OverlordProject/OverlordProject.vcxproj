@@ -108,6 +108,7 @@
     <ClCompile Include="Prefabs\Mario.cpp" />
     <ClCompile Include="Prefabs\CubePrefab.cpp" />
     <ClCompile Include="Prefabs\SpherePrefab.cpp" />
+    <ClCompile Include="Prefabs\Star.cpp" />
     <ClCompile Include="Prefabs\TorusPrefab.cpp" />
     <ClCompile Include="Materials\ColorMaterial.cpp" />
     <ClCompile Include="Scenes\Game\MainMenu.cpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="Prefabs\Mario.h" />
     <ClInclude Include="Prefabs\CubePrefab.h" />
     <ClInclude Include="Prefabs\SpherePrefab.h" />
+    <ClInclude Include="Prefabs\Star.h" />
     <ClInclude Include="Prefabs\TorusPrefab.h" />
     <ClInclude Include="Materials\ColorMaterial.h" />
     <ClInclude Include="Scenes\Game\MainMenu.h" />

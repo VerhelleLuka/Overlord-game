@@ -11,7 +11,7 @@ void PhysxErrorCallback::reportError(PxErrorCode::Enum code, const char* message
 	ss << "Message: " << message << std::endl;
 	ss << "File: " << file << " (line: " << line << ")";
 
-	switch (code)
+ 	switch (code)
 	{
 	case PxErrorCode::eDEBUG_INFO:
 		Logger::LogDebug(L"PHYSX Debug Info @ {} (line {})\n\t{}", StringUtil::utf8_decode(file), line, StringUtil::utf8_decode(message));

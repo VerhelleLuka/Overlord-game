@@ -26,7 +26,7 @@ void Mario::Initialize(const SceneContext& sceneContext)
 {
 	//Mesh
 	const auto pMarioObject = new GameObject;
-	auto pMarioMesh = pMarioObject->AddComponent(new ModelComponent(L"Meshes/Mario/Mario.ovm"));
+	auto pMarioMesh = pMarioObject->AddComponent(new ModelComponent(L"Meshes/Mario.ovm"));
 	pMarioMesh->SetMaterial(MaterialManager::Get()->CreateMaterial<ColorMaterial>());
 	pMarioObject->GetTransform()->Translate(0, m_yPosOffset, 0);
 	pMarioObject->GetTransform()->Scale(m_Scale);
@@ -34,7 +34,8 @@ void Mario::Initialize(const SceneContext& sceneContext)
 	AddChild(pMarioObject);
 
 	//Controller
-	m_CharacterDesc.controller.height = .6f;
+	m_CharacterDesc.controller.height = .3f;
+	m_CharacterDesc.controller.radius = .15f;
 	m_pControllerComponent = AddComponent(new ControllerComponent(m_CharacterDesc.controller));
 	//Character desc
 	m_CharacterDesc.rotationSpeed /= 2;
@@ -91,7 +92,6 @@ void Mario::Initialize(const SceneContext& sceneContext)
 	PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
 	m_pControllerComponent->GetFootPosition().y,
 	m_pControllerComponent->GetFootPosition().z };
-	origin.y += 1.6f;
 	PxExtendedVec3 origin2;
 	origin2.x = origin.x;
 	origin2.y = origin.y;
@@ -103,6 +103,8 @@ void Mario::Initialize(const SceneContext& sceneContext)
 	m_PreviousState = MovementState::IDLE;
 	m_MovementState = MovementState::IDLE;
 
+	m_pControllerComponent->SetCollisionGroup(CollisionGroup::Group1 | CollisionGroup::Group2);
+	
 }
 
 void Mario::Update(const SceneContext& sceneContext)
@@ -234,6 +236,10 @@ void Mario::Update(const SceneContext& sceneContext)
 		{
 			m_pParticle->SetActive(false);
 		}
+
+		PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
+m_pControllerComponent->GetFootPosition().y,
+m_pControllerComponent->GetFootPosition().z };
 		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Run))
 		{
 			m_IsRunning = true;
@@ -243,9 +249,7 @@ void Mario::Update(const SceneContext& sceneContext)
 			m_pParticle->SetActive(true);
 			//Don't run if not touching ground
 			PxRaycastBuffer raycastBuffer;
-			PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
-			m_pControllerComponent->GetFootPosition().y,
-			m_pControllerComponent->GetFootPosition().z };
+
 			if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer))
 			{
 
@@ -263,9 +267,7 @@ void Mario::Update(const SceneContext& sceneContext)
 			{
 				//Don't run if not touching ground
 				PxRaycastBuffer raycastBuffer;
-				PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
-				m_pControllerComponent->GetFootPosition().y,
-				m_pControllerComponent->GetFootPosition().z };
+
 				if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer))
 				{
 					m_MovementState = MovementState::WALKING;
@@ -336,12 +338,8 @@ void Mario::Update(const SceneContext& sceneContext)
 
 		//## Vertical Movement (Jump/Fall)
 		//If the Controller Component is NOT grounded (= freefall)
-		auto collisionFlags = m_pControllerComponent->GetCollisionFlags();
 
 		PxRaycastBuffer raycastBuffer;
-		PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
-		m_pControllerComponent->GetFootPosition().y,
-		m_pControllerComponent->GetFootPosition().z };
 
 		//Direction is the down vector (inverse of up vector)
 
@@ -405,7 +403,7 @@ void Mario::Update(const SceneContext& sceneContext)
 			m_MovementState = MovementState::JUMPING;
 
 			m_pParticle->SetActive(true);
-			m_pParticle->SpawnNrOfParticles(50, sceneContext);
+			m_pParticle->SpawnNrOfParticles(150, sceneContext);
 			m_pParticle->SetActive(false);
 			//Non long jump logic
 			if (!ducked)

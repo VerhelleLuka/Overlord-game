@@ -18,6 +18,7 @@ protected:
 	void Initialize() override;
 	void OnGUI() override;
 	virtual void Update() override;
+	 void OnTriggerCallBack(GameObject* /*pTriggerObject*/, GameObject* /*pOtherObject*/, PxTriggerAction /*action*/) ;
 
 private:
 	void CreateLevel();
@@ -34,6 +35,7 @@ private:
 
 
 	Mario* m_pCharacter{};
+	GameObject* m_pCharacterRigidBody;
 	ParticleEmitterComponent* m_pEmitter;
 	PostPixelation* m_pPixelation;
 	PostGrayscale* m_pGrayscale;

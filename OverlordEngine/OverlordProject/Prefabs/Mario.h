@@ -109,7 +109,7 @@ private:
 
 	//Other stuff
 	const float m_yPosOffset = -.9f;
-	const float m_Scale = 0.005f;
+	const float m_Scale = 0.0075f;
 
 	//For pause menu
 	bool m_IsPaused;

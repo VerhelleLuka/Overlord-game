@@ -34,6 +34,6 @@ void ComponentTestScene::Initialize()
 	pSphereObject = AddChild(new SpherePrefab(1.f, 10, XMFLOAT4{ Colors::Blue }));
 	pSphereActor = pSphereObject->AddComponent(new RigidBodyComponent());
 	pSphereActor->AddCollider(PxSphereGeometry{ 1.f }, *pBouncyMaterial);
-
+	
 	pSphereObject->GetTransform()->Translate(0.f, 20.f, 0.f);
 }
