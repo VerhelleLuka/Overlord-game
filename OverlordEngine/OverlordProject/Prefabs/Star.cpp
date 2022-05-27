@@ -20,10 +20,16 @@ void Star::Initialize(const SceneContext&)
 
 	AddComponent(pStarMesh);
 
-	
+	m_Rotation = 0.f;
 }
 
-void Star::Update(const SceneContext&)
+void Star::Update(const SceneContext& sceneContext)
 {
+	GetTransform()->Rotate(0.f, m_Rotation , 0.f, true);
+	m_Rotation += 60.f * sceneContext.pGameTime->GetElapsed();
 
+	if (m_Rotation >= 360.f)
+		m_Rotation = 0.f;
+
+	
 }

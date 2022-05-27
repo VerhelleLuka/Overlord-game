@@ -20,16 +20,23 @@ public:
 	void SetTexture(const std::wstring& spriteAsset);
 	TextureData* GetTexture() const { return m_pTexture; }
 	void Enable(bool enable) { m_Enabled = enable; }
+	void EnableWithDelay(bool enable, float delay);
 	bool IsEnabled() const { return m_Enabled; }
-
+	
 protected:
 	void Initialize(const SceneContext& sceneContext) override;
 	void Draw(const SceneContext& sceneContext) override;
-
+	void Update(const SceneContext& sceneContext)override;
 private:
 	TextureData* m_pTexture{};
 	std::wstring m_SpriteAsset{};
 	XMFLOAT2 m_Pivot{};
 	XMFLOAT4 m_Color{};
 	bool m_Enabled;
+	FMOD::Sound* m_pUITick;
+	bool m_ToEnable;
+	float m_DelayTimer;
+	float m_DelayTime;
+	FMOD::ChannelGroup* m_pSoundEffectGroup{};
+
 };

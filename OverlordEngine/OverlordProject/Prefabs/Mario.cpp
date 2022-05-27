@@ -34,14 +34,15 @@ void Mario::Initialize(const SceneContext& sceneContext)
 	AddChild(pMarioObject);
 
 	//Controller
-	m_CharacterDesc.controller.height = .3f;
+	m_CharacterDesc.controller.height = .5f;
 	m_CharacterDesc.controller.radius = .15f;
+	m_CharacterDesc.controller.invisibleWallHeight = physx::PxF32(-2);
 	m_pControllerComponent = AddComponent(new ControllerComponent(m_CharacterDesc.controller));
 	//Character desc
 	m_CharacterDesc.rotationSpeed /= 2;
 	m_CharacterDesc.maxMoveSpeed /= 2;
 	m_WalkSpeed = m_CharacterDesc.maxMoveSpeed;
-	m_RunSpeed = m_WalkSpeed * 2;
+	//m_RunSpeed = m_WalkSpeed * 2;
 	//Camera
 	const auto pCamera = AddChild(new FixedCamera());
 	m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
@@ -88,31 +89,25 @@ void Mario::Initialize(const SceneContext& sceneContext)
 	}
 	m_pAnimator->Play();
 
-	//Set foot position 1.6 higher due to offset
-	PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
-	m_pControllerComponent->GetFootPosition().y,
-	m_pControllerComponent->GetFootPosition().z };
-	PxExtendedVec3 origin2;
-	origin2.x = origin.x;
-	origin2.y = origin.y;
-	origin2.z = origin.z;
-	m_pControllerComponent->GetPxController()->setFootPosition(origin2);
 
 	//m_pControllerComponent->GetPxController().set
 	//SoundManager::Get()->GetSystem()->playSound()
 	m_PreviousState = MovementState::IDLE;
 	m_MovementState = MovementState::IDLE;
 
-	m_pControllerComponent->SetCollisionGroup(CollisionGroup::Group1 | CollisionGroup::Group2);
+	//m_pControllerComponent->SetCollisionGroup(CollisionGroup::Group1);
+	m_pControllerComponent->SetCollisionIgnoreGroup(CollisionGroup::Group3);
 
-	//auto pRigidBodyGO = new GameObject();
-	//const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
+	//Sound
+	auto pSoundSystem = SoundManager::Get()->GetSystem();
 
-	//auto rigidBody = pRigidBodyGO->AddComponent(new RigidBodyComponent());
-	//rigidBody->AddCollider(PxBoxGeometry{ 0.25f, 0.25f, 0.25f }, *pDefaultMaterial);
-	//rigidBody->SetCollisionIgnoreGroups(CollisionGroup::Group1 | CollisionGroup::Group2);
-	//m_pRigidBody = rigidBody;
-	//AddChild(pRigidBodyGO);
+	pSoundSystem->createStream("Resources/Sounds/yahoo.wav", FMOD_DEFAULT, nullptr, &m_pYahooSound);
+	pSoundSystem->createStream("Resources/Sounds/hoohoo.wav", FMOD_DEFAULT, nullptr, &m_pHoohooSound);
+
+	m_OriginalMaxMoveSpeed = m_CharacterDesc.maxMoveSpeed;
+
+	m_TotalYaw = 45.f;
+	m_TotalPitch = 10.f;
 }
 
 void Mario::Update(const SceneContext& sceneContext)
@@ -198,11 +193,6 @@ void Mario::Update(const SceneContext& sceneContext)
 			m_pCameraComponent->GetTransform()->GetForward().y,
 			m_pCameraComponent->GetTransform()->GetForward().z };
 
-			if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, direction,
-				(m_CameraDistance * -1) - 3, raycastBuffer))
-			{
-				//std::cout << "Shit cam\n";
-			}
 		}
 		else
 		{
@@ -225,7 +215,7 @@ void Mario::Update(const SceneContext& sceneContext)
 			isMoving = true;
 
 		}
-		
+
 
 		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_MoveRight))
 		{
@@ -247,29 +237,40 @@ void Mario::Update(const SceneContext& sceneContext)
 			m_pParticle->SetActive(false);
 		}
 
+		m_CharacterDesc.maxMoveSpeed = m_OriginalMaxMoveSpeed * 0.25f;
+		
+		if(!ducked)
+		{
+			m_CharacterDesc.maxMoveSpeed = m_OriginalMaxMoveSpeed;
+
+		}
 		PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
-m_pControllerComponent->GetFootPosition().y,
-m_pControllerComponent->GetFootPosition().z };
-		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Run))
+			m_pControllerComponent->GetFootPosition().y,
+			m_pControllerComponent->GetFootPosition().z };
+		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Run) )
 		{
 			m_IsRunning = true;
-			moveAccell *= 2;
-			moveAccell *= 2;
-			m_CharacterDesc.maxMoveSpeed = m_RunSpeed;
-			m_pParticle->SetActive(true);
-			//Don't run if not touching ground
-			PxRaycastBuffer raycastBuffer;
-
-			if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer))
+			if (!ducked)
 			{
+				moveAccell *= m_RunSpeedMultiplier;
+				moveAccell *= m_RunSpeedMultiplier;
+				m_CharacterDesc.maxMoveSpeed = m_CharacterDesc.maxMoveSpeed * m_RunSpeedMultiplier;
+				m_pParticle->SetActive(true);
+				//Don't run if not touching ground
+				PxRaycastBuffer raycastBuffer;
 
-				m_MovementState = MovementState::RUNNING;
+				if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer))
+				{
+
+					m_MovementState = MovementState::RUNNING;
+				}
+				if (!m_RunAnimSet)
+				{
+					m_RunAnimSet = true;
+					m_WalkAnimSet = false;
+				}
 			}
-			if (!m_RunAnimSet)
-			{
-				m_RunAnimSet = true;
-				m_WalkAnimSet = false;
-			}
+
 		}
 		else
 		{
@@ -284,7 +285,7 @@ m_pControllerComponent->GetFootPosition().z };
 				}
 			}
 			m_IsRunning = false;
-			m_CharacterDesc.maxMoveSpeed = m_WalkSpeed;
+			//m_CharacterDesc.maxMoveSpeed = m_WalkSpeed;
 		}
 
 		auto camForward = XMVector3Normalize(XMLoadFloat3(&m_pCameraComponent->GetTransform()->GetForward()));
@@ -393,6 +394,7 @@ m_pControllerComponent->GetFootPosition().z };
 				m_LandedTimeDouble += elapsedTime;
 				if (m_LandedTimeDouble >= m_MaxLandedTimeDouble)
 				{
+
 					m_JustLanded = false;
 					m_LandedTimeDouble = 0;
 					m_JustJumped = false;
@@ -401,6 +403,7 @@ m_pControllerComponent->GetFootPosition().z };
 				m_LandedTimeTriple += elapsedTime;
 				if (m_LandedTimeTriple >= m_MaxLandedTimeTriple)
 				{
+
 					m_LandedTimeTriple = 0;
 					m_ThirdJumpPrimed = false;
 					m_JustLanded = false;
@@ -413,7 +416,7 @@ m_pControllerComponent->GetFootPosition().z };
 			m_MovementState = MovementState::JUMPING;
 
 			m_pParticle->SetActive(true);
-			m_pParticle->SpawnNrOfParticles(150, sceneContext);
+			m_pParticle->SpawnNrOfParticles(150, sceneContext, m_pModelComponent->GetTransform()->GetForward().x ,1.f, m_pModelComponent->GetTransform()->GetForward().z );
 			m_pParticle->SetActive(false);
 			//Non long jump logic
 			if (!ducked)
@@ -422,15 +425,18 @@ m_pControllerComponent->GetFootPosition().z };
 				m_TotalVelocity.y = m_CharacterDesc.JumpSpeed;
 				if (m_JustJumped && !m_ThirdJumpPrimed)
 				{
-					m_TotalVelocity.y += m_CharacterDesc.JumpSpeed;
+					SoundManager::Get()->GetSystem()->playSound(m_pHoohooSound, m_pSoundEffectGroup, false, nullptr);
+					m_TotalVelocity.y += m_CharacterDesc.JumpSpeed * 0.33f;
 					m_ThirdJumpPrimed = true;
 				}
 				//Third jump
 				else if (m_ThirdJumpPrimed)
 				{
+					SoundManager::Get()->GetSystem()->playSound(m_pYahooSound, m_pSoundEffectGroup, false, nullptr);
+
 					m_MovementState = MovementState::FRONTFLIP;
 
-					m_TotalVelocity.y += m_CharacterDesc.JumpSpeed * 2;
+					m_TotalVelocity.y += m_CharacterDesc.JumpSpeed * 0.75f;
 				}
 				if (!m_ThirdJumpPrimed)
 					m_JustJumped = true;
@@ -451,8 +457,8 @@ m_pControllerComponent->GetFootPosition().z };
 				m_MovementState = MovementState::BACKFLIP;
 
 				m_TotalVelocity.y = m_CharacterDesc.JumpSpeed * 1.5f;
-				m_TotalVelocity.x = m_MoveSpeed * -m_CurrentDirection.x * m_BackFlipSpeed;
-				m_TotalVelocity.z = m_MoveSpeed * -m_CurrentDirection.z * m_BackFlipSpeed;
+				//m_TotalVelocity.x = m_MoveSpeed * -m_CurrentDirection.x * m_BackFlipSpeed;
+				//m_TotalVelocity.z = m_MoveSpeed * -m_CurrentDirection.z * m_BackFlipSpeed;
 			}
 		}
 		else

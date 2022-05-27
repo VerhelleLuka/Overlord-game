@@ -43,11 +43,16 @@ void ParticleEmitterComponent::CreateVertexBuffer(const SceneContext& sceneConte
 	bufferDesc.MiscFlags = 0;
 	sceneContext.d3dContext.pDevice->CreateBuffer(&bufferDesc, nullptr, &m_pVertexBuffer);
 }
-void ParticleEmitterComponent::SpawnNrOfParticles(int amount, const SceneContext& sceneContext)
+void ParticleEmitterComponent::SpawnNrOfParticles(int amount, const SceneContext& sceneContext,  float xVelocity, float yVelocity, float zVelocity)
 {
+	m_EmitterSettings.velocity.x = xVelocity;
+
+	m_EmitterSettings.velocity.y = yVelocity;
+
+	m_EmitterSettings.velocity.z = zVelocity;
 	for (int i{}; i < amount; ++i)
 	{
-		Update(sceneContext);
+		Update(sceneContext);		
 	}
 }
 void ParticleEmitterComponent::Update(const SceneContext& sceneContext)
@@ -79,7 +84,7 @@ void ParticleEmitterComponent::Update(const SceneContext& sceneContext)
 		}
 
 	}
-		sceneContext.d3dContext.pDeviceContext->Unmap(m_pVertexBuffer, 0);
+	sceneContext.d3dContext.pDeviceContext->Unmap(m_pVertexBuffer, 0);
 }
 void ParticleEmitterComponent::UpdateParticle(Particle& p, float elapsedTime) const
 {

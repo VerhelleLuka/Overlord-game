@@ -5,6 +5,7 @@ class PostGrayscale;
 class DiffuseMaterial_Shadow;
 class ModelComponent;
 class Star;
+class KoopaTroopa;
 class MyGameScene : public GameScene
 {
 public:
@@ -23,6 +24,9 @@ protected:
 
 private:
 	void CreateLevel();
+	void CreateStar();
+	void CreateKoopaTroopa();
+	void ResetScene();
 	enum InputIds
 	{
 		CharacterMoveLeft,
@@ -37,6 +41,7 @@ private:
 
 	Mario* m_pCharacter{};
 	Star* m_pStar;
+	KoopaTroopa* m_pKoopaTroopa;
 	GameObject* m_pCharacterRigidBody;
 	ParticleEmitterComponent* m_pEmitter;
 	PostPixelation* m_pPixelation;
@@ -50,5 +55,15 @@ private:
 
 	const XMFLOAT3 m_OriginalPosition = {-30.f, 10.f, -30.f};
 	const XMFLOAT3 m_OriginalStarPosition = {-25.f, 10.f, -25.f};
+	const XMFLOAT3 m_OriginalGoombaPosition = { 20.f, 13.5f, -10.f };
+
+	FMOD::Sound* m_pGameOverSound{};
+	FMOD::Sound* m_pOofSound{};
+
+	FMOD::Sound* m_pPauseSound{};
+	FMOD::Sound* m_pStarSound{};
+	FMOD::ChannelGroup* m_pSoundEffectGroup{};
+
+	bool m_KillKoopaTroopa;
 };
 

@@ -77,7 +77,7 @@ private:
 			GetTransform()->GetUp().z * -1 };
 
 	//Movement stuff
-	float m_RunSpeed;
+	//float m_RunSpeed;
 	float m_WalkSpeed;
 	bool m_IsRunning; //Need this for triple jump
 	bool m_JustJumped = false;
@@ -108,12 +108,21 @@ private:
 	ParticleEmitterComponent* m_pParticle;
 
 	//Other stuff
-	const float m_yPosOffset = -.9f;
+	const float m_yPosOffset = -.75f;
 	const float m_Scale = 0.0075f;
 
 	//For pause menu
 	bool m_IsPaused;
 
-	//RigidBodyComponent* m_pRigidBody;
+	FMOD::Sound* m_pHoohooSound{};
+	FMOD::Sound* m_pYahooSound{};
+	FMOD::ChannelGroup* m_pSoundEffectGroup{};
+
+	//backflip
+	float m_OriginalMaxMoveSpeed;
+
+	//running
+	const float m_RunSpeedMultiplier = 1.5f;
+
 };
 

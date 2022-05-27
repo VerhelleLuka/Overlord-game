@@ -104,6 +104,7 @@
     <ClCompile Include="Materials\UberMaterial.cpp" />
     <ClCompile Include="Prefabs\BoneObject.cpp" />
     <ClCompile Include="Prefabs\Character.cpp" />
+    <ClCompile Include="Prefabs\Goomba.cpp" />
     <ClCompile Include="Prefabs\KoopaTroopa.cpp" />
     <ClCompile Include="Prefabs\Mario.cpp" />
     <ClCompile Include="Prefabs\CubePrefab.cpp" />
@@ -160,6 +161,7 @@
     <ClInclude Include="Materials\UberMaterial.h" />
     <ClInclude Include="Prefabs\BoneObject.h" />
     <ClInclude Include="Prefabs\Character.h" />
+    <ClInclude Include="Prefabs\Goomba.h" />
     <ClInclude Include="Prefabs\KoopaTroopa.h" />
     <ClInclude Include="Prefabs\Mario.h" />
     <ClInclude Include="Prefabs\CubePrefab.h" />

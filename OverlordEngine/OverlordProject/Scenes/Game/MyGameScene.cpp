@@ -8,6 +8,7 @@
 #include "Components/SpriteComponent.h"
 #include <Materials/Shadow/DiffuseMaterial_Shadow.h>
 #include "Prefabs/Star.h"
+#include "Prefabs/Goomba.h"
 void MyGameScene::Initialize()
 {
 	m_SceneContext.settings.enableOnGUI = true;
@@ -30,6 +31,7 @@ void MyGameScene::Initialize()
 	m_pCharacter->SetGameMode(GameMode::THIRDPERSON);
 	m_pCharacter->GetTransform()->Translate(m_OriginalPosition);
 	m_pCharacter->GetTransform()->Scale(0.5f, 0.5f, 0.5f);
+	m_pCharacter->SetTag(L"Mario");
 	//AddChild(m_pCharacter);
 
 	//const auto pKoopaTroopa = AddChild(new KoopaTroopa);
@@ -105,16 +107,19 @@ void MyGameScene::Initialize()
 	m_pPauseMenu->Enable(false);
 	AddChild(pPauseGo);
 
-	//Star
-	auto pStarGo = new Star();
-	AddChild(pStarGo);
-	auto starBody = pStarGo->AddComponent(new RigidBodyComponent());
-	starBody->AddCollider(PxBoxGeometry{ 1.f, 1.f, 1.f }, *pDefaultMaterial, true);
-	pStarGo->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-	starBody->SetCollisionGroup(CollisionGroup::Group1);
-	starBody->SetKinematic(true);	
-	pStarGo->GetTransform()->Translate(m_OriginalStarPosition);
-	m_pStar = pStarGo;
+
+
+	//Sound effects
+	auto pSoundSystem = SoundManager::Get()->GetSystem();
+
+	pSoundSystem->createStream("Resources/Sounds/gameover.wav", FMOD_DEFAULT, nullptr, &m_pGameOverSound);
+	pSoundSystem->createStream("Resources/Sounds/oof.wav", FMOD_DEFAULT, nullptr, &m_pOofSound);
+	pSoundSystem->createStream("Resources/Sounds/star_appears.wav", FMOD_DEFAULT, nullptr, &m_pStarSound);
+	pSoundSystem->createStream("Resources/Sounds/pause.wav", FMOD_DEFAULT, nullptr, &m_pPauseSound);
+
+	CreateStar();
+	CreateKoopaTroopa();
+	
 }
 
 void MyGameScene::CreateLevel()
@@ -212,16 +217,62 @@ void MyGameScene::CreateLevel()
 
 	pLevelObject->GetTransform()->Scale(1.f, 1.f, 1.f);
 }
+
+void MyGameScene::CreateStar()
+{
+	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
+
+	auto pStarGo = new Star();
+	AddChild(pStarGo);
+	auto starBody = pStarGo->AddComponent(new RigidBodyComponent());
+	starBody->AddCollider(PxBoxGeometry{ 1.f, 1.f, 1.f }, *pDefaultMaterial, true);
+	pStarGo->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	starBody->SetCollisionGroup(CollisionGroup::Group1);
+	starBody->SetKinematic(true);
+	pStarGo->GetTransform()->Translate(m_OriginalStarPosition);
+	m_pStar = pStarGo;
+
+
+	//Particle 
+	ParticleEmitterSettings settings{};
+	settings.velocity = { 0.f,1.f,0.f };
+	settings.minSize = .1f;
+	settings.maxSize = .5f;
+	settings.minEnergy = .5f;
+	settings.maxEnergy = 1.f;
+	settings.minScale = .5f;
+	settings.maxScale = 1.f;
+	settings.minEmitterRadius = 0.1f;
+	settings.maxEmitterRadius = 1.5f;
+	settings.color = { 1.f,1.f,1.f, .6f };
+	auto pEmitter = m_pStar->AddComponent(new ParticleEmitterComponent(L"Textures/StarSparkle.png", settings, 10));
+	m_pStar->SetParticle(pEmitter);
+	pEmitter->SetActive(true);
+	m_pStar->SetTag(L"Star");
+}
+
+void MyGameScene::CreateKoopaTroopa()
+{
+	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
+
+	const auto pKoopaGo = new KoopaTroopa();
+	auto koopaBody = pKoopaGo->AddComponent(new RigidBodyComponent());
+	koopaBody->AddCollider(PxBoxGeometry{ .35f, .75f, .75f }, *pDefaultMaterial, true, physx::PxTransform{0.f, -0.5f, -0.5});
+	pKoopaGo->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+	//koopaBody->SetKinematic(true);
+	pKoopaGo->GetTransform()->Translate(m_OriginalGoombaPosition);
+	koopaBody->SetConstraint(RigidBodyConstraint::TransY, false);
+	koopaBody->SetCollisionGroup(CollisionGroup::Group3);
+	koopaBody->SetCollisionIgnoreGroups(CollisionGroup::Group0);
+	m_pKoopaTroopa = pKoopaGo;
+	m_pKoopaTroopa->SetTag(L"KoopaTroopa");
+	m_KillKoopaTroopa = false;
+	AddChild(m_pKoopaTroopa);
+}
 void MyGameScene::Update()
 {
-	//if (sqrtf( powf((m_pCharacter->GetTransform()->GetPosition().x - m_pStar->GetTransform()->GetPosition().x), 2.f) + 
-	//	powf((m_pCharacter->GetTransform()->GetPosition().y - m_pStar->GetTransform()->GetPosition().y), 2.f) +
-	//	powf((m_pCharacter->GetTransform()->GetPosition().z - m_pStar->GetTransform()->GetPosition().z), 2.f)))
-	
-	//if (XMVectorSubtract(XMLoadFloat3(&m_pCharacter->GetTransform()->GetPosition()), &m_pStar->GetTransform()->GetPosition()) < 1.f)
-	//{
-	//	std::cout<<"Close to star!";
-	//}
+
 	m_pPauseMenu->GetTexture()->SetDimenson({ m_SceneContext.windowWidth, m_SceneContext.windowHeight });
 	if (!m_SceneInitialized)
 	{
@@ -244,6 +295,7 @@ void MyGameScene::Update()
 	{
 		if (!m_pCharacter->GetPaused())
 		{
+
 			m_pCharacter->SetPaused(true);
 			m_pPauseMenu->Enable(true);
 		}
@@ -252,7 +304,7 @@ void MyGameScene::Update()
 			m_pCharacter->SetPaused(false);
 			m_pPauseMenu->Enable(false);
 		}
-
+		SoundManager::Get()->GetSystem()->playSound(m_pPauseSound, m_pSoundEffectGroup, false, nullptr);
 	}
 	if (InputManager::IsKeyboardKey(InputState::pressed, VK_SPACE) && m_pCharacter->GetPaused())
 	{
@@ -269,6 +321,10 @@ void MyGameScene::Update()
 		m_pPauseMenu->Enable(false);
 		SceneManager::Get()->PreviousScene();
 	}
+	if (m_KillKoopaTroopa)
+	{
+		RemoveChild(m_pKoopaTroopa);
+	}
 
 }
 
@@ -279,7 +335,42 @@ void MyGameScene::OnGUI()
 
 }
 
-void MyGameScene::OnTriggerCallBack(GameObject* /*pTriggerObject*/, GameObject* /*pOtherObject*/, PxTriggerAction /*action*/)
+void MyGameScene::OnTriggerCallBack(GameObject* pTriggerObject, GameObject* pOtherObject, PxTriggerAction /*action*/)
 {
-	std::cout << "Serieus?\n";
+	if (pTriggerObject->GetTag() == L"Star" && pOtherObject->GetTag() == L"Mario")
+	{
+		ResetScene();
+	}
+	if (pTriggerObject->GetTag() == L"KoopaTroopa" && pOtherObject->GetTag() == L"Mario")
+	{
+		if (pTriggerObject->GetTransform()->GetWorldPosition().y > pOtherObject->GetTransform()->GetWorldPosition().y)
+		{
+			SoundManager::Get()->GetSystem()->playSound(m_pOofSound, m_pSoundEffectGroup, false, nullptr);
+			int amountDisabled = 0;
+			for (int i = 5; i >= 0; --i)
+			{
+				if (m_pUI[i]->GetComponent<SpriteComponent>()->IsEnabled() && amountDisabled != 2)
+				{
+					++amountDisabled;
+					m_pUI[i]->GetComponent<SpriteComponent>()->EnableWithDelay(false, float(amountDisabled));
+				}
+				if (!m_pUI[0]->GetComponent<SpriteComponent>()->IsEnabled())
+				{
+					//Kill mario
+				}
+			}
+		}
+		else
+		{
+			m_KillKoopaTroopa = true;
+
+		}
+	}
+}
+
+void MyGameScene::ResetScene()
+{
+	m_pCharacter->GetTransform()->Translate(m_OriginalPosition);
+	m_pPauseMenu->Enable(false);
+	m_pCharacter->SetPaused(false);
 }
