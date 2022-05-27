@@ -104,11 +104,20 @@ void Mario::Initialize(const SceneContext& sceneContext)
 	m_MovementState = MovementState::IDLE;
 
 	m_pControllerComponent->SetCollisionGroup(CollisionGroup::Group1 | CollisionGroup::Group2);
-	
+
+	//auto pRigidBodyGO = new GameObject();
+	//const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
+
+	//auto rigidBody = pRigidBodyGO->AddComponent(new RigidBodyComponent());
+	//rigidBody->AddCollider(PxBoxGeometry{ 0.25f, 0.25f, 0.25f }, *pDefaultMaterial);
+	//rigidBody->SetCollisionIgnoreGroups(CollisionGroup::Group1 | CollisionGroup::Group2);
+	//m_pRigidBody = rigidBody;
+	//AddChild(pRigidBodyGO);
 }
 
 void Mario::Update(const SceneContext& sceneContext)
 {
+	//m_pRigidBody->GetTransform()->Translate(GetTransform()->GetPosition());
 	if (m_pCameraComponent->IsActive() && !m_IsPaused)
 	{
 		if ((m_MovementState != MovementState::JUMPING && m_MovementState != MovementState::BACKFLIP && m_MovementState != MovementState::FRONTFLIP) ||
@@ -216,6 +225,7 @@ void Mario::Update(const SceneContext& sceneContext)
 			isMoving = true;
 
 		}
+		
 
 		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_MoveRight))
 		{

@@ -111,8 +111,10 @@ void MyGameScene::Initialize()
 	auto starBody = pStarGo->AddComponent(new RigidBodyComponent());
 	starBody->AddCollider(PxBoxGeometry{ 1.f, 1.f, 1.f }, *pDefaultMaterial, true);
 	pStarGo->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-	//starBody->SetKinematic(true);	
-	pStarGo->GetTransform()->Translate(m_OriginalPosition);
+	starBody->SetCollisionGroup(CollisionGroup::Group1);
+	starBody->SetKinematic(true);	
+	pStarGo->GetTransform()->Translate(m_OriginalStarPosition);
+	m_pStar = pStarGo;
 }
 
 void MyGameScene::CreateLevel()
@@ -212,6 +214,14 @@ void MyGameScene::CreateLevel()
 }
 void MyGameScene::Update()
 {
+	//if (sqrtf( powf((m_pCharacter->GetTransform()->GetPosition().x - m_pStar->GetTransform()->GetPosition().x), 2.f) + 
+	//	powf((m_pCharacter->GetTransform()->GetPosition().y - m_pStar->GetTransform()->GetPosition().y), 2.f) +
+	//	powf((m_pCharacter->GetTransform()->GetPosition().z - m_pStar->GetTransform()->GetPosition().z), 2.f)))
+	
+	//if (XMVectorSubtract(XMLoadFloat3(&m_pCharacter->GetTransform()->GetPosition()), &m_pStar->GetTransform()->GetPosition()) < 1.f)
+	//{
+	//	std::cout<<"Close to star!";
+	//}
 	m_pPauseMenu->GetTexture()->SetDimenson({ m_SceneContext.windowWidth, m_SceneContext.windowHeight });
 	if (!m_SceneInitialized)
 	{
@@ -259,10 +269,7 @@ void MyGameScene::Update()
 		m_pPauseMenu->Enable(false);
 		SceneManager::Get()->PreviousScene();
 	}
-	if (m_pCharacter->GetComponent<RigidBodyComponent>(true))
-	{
-		std::cout << "Has rigid body\n";
-	}
+
 }
 
 void MyGameScene::OnGUI()
@@ -274,5 +281,5 @@ void MyGameScene::OnGUI()
 
 void MyGameScene::OnTriggerCallBack(GameObject* /*pTriggerObject*/, GameObject* /*pOtherObject*/, PxTriggerAction /*action*/)
 {
-	std::cout << "Star colliding!\n";
+	std::cout << "Serieus?\n";
 }

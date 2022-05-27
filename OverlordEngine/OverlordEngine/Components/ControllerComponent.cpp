@@ -27,7 +27,7 @@ void ControllerComponent::Initialize(const SceneContext& /*sceneContext*/)
 		}
 
 		m_pController->setUserData(this);
-
+		m_pController->getActor()->userData = this;
 		SetCollisionGroup(static_cast<CollisionGroup>(m_CollisionGroups.word0));
 		SetCollisionIgnoreGroup(static_cast<CollisionGroup>(m_CollisionGroups.word1));
 	}

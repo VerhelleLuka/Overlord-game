@@ -113,5 +113,7 @@ private:
 
 	//For pause menu
 	bool m_IsPaused;
+
+	//RigidBodyComponent* m_pRigidBody;
 };
 

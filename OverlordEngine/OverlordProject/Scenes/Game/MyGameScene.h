@@ -4,6 +4,7 @@ class Mario;
 class PostGrayscale;
 class DiffuseMaterial_Shadow;
 class ModelComponent;
+class Star;
 class MyGameScene : public GameScene
 {
 public:
@@ -35,6 +36,7 @@ private:
 
 
 	Mario* m_pCharacter{};
+	Star* m_pStar;
 	GameObject* m_pCharacterRigidBody;
 	ParticleEmitterComponent* m_pEmitter;
 	PostPixelation* m_pPixelation;
@@ -47,5 +49,6 @@ private:
 	SpriteComponent* m_pPauseMenu;
 
 	const XMFLOAT3 m_OriginalPosition = {-30.f, 10.f, -30.f};
+	const XMFLOAT3 m_OriginalStarPosition = {-25.f, 10.f, -25.f};
 };
 
