@@ -7,6 +7,7 @@ class ModelComponent;
 class Star;
 class KoopaTroopa;
 class Coin;
+class SpriteFont;
 class MyGameScene : public GameScene
 {
 public:
@@ -21,7 +22,8 @@ protected:
 	void Initialize() override;
 	void OnGUI() override;
 	virtual void Update() override;
-	 void OnTriggerCallBack(GameObject* /*pTriggerObject*/, GameObject* /*pOtherObject*/, PxTriggerAction /*action*/) ;
+	void OnTriggerCallBack(GameObject* /*pTriggerObject*/, GameObject* /*pOtherObject*/, PxTriggerAction /*action*/);
+	//void PostDraw() override;
 
 private:
 	void CreateLevel();
@@ -63,9 +65,9 @@ private:
 	SpriteComponent* m_pPauseMenu;
 	SpriteComponent* m_pDeathScreen;
 	SpriteComponent* m_pWinScreen;
-	const XMFLOAT3 m_OriginalPositionOG = {-30.f, 10.f, -30.f};
+	const XMFLOAT3 m_OriginalPositionOG = { -30.f, 10.f, -30.f };
 	const XMFLOAT3 m_OriginalPosition = { 15.f, 30.2f, 20.f };
-	const XMFLOAT3 m_OriginalStarPosition = {-25.f, 10.f, -25.f};
+	const XMFLOAT3 m_OriginalStarPosition = { -25.f, 10.f, -25.f };
 
 	const XMFLOAT3 m_OriginalKoopaPosition = { 20.f, 13.5f, -10.f };
 	const XMFLOAT3 m_OriginalKoopaPosition1 = { -30.f, 13.5f, -10.f };
@@ -88,5 +90,9 @@ private:
 	const int m_NrKoopas = 5;
 	int m_KoopasKilled;
 	GameObject* m_pObjectToKill;
+	SpriteFont* m_pFont;
+	int m_NrCoins;
+	XMFLOAT2 m_TextPos;
+	float m_ShadowMapScale{ 0.3f };
 };
 

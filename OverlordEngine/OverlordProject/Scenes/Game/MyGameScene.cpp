@@ -10,11 +10,13 @@
 #include "Prefabs/Star.h"
 #include "Prefabs/Goomba.h"
 #include "Prefabs/Coin.h"
+
 void MyGameScene::Initialize()
 {
 	m_KoopasKilled = 0;
-	m_SceneContext.settings.enableOnGUI = true;
+	m_SceneContext.settings.enableOnGUI = false;
 	m_SceneContext.settings.drawGrid = false;
+	m_SceneContext.settings.showInfoOverlay = false;
 
 	//Ground Plane
 	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
@@ -93,7 +95,7 @@ void MyGameScene::Initialize()
 	m_pCharacter->SetParticle(m_pEmitter);
 
 	//Light
-	m_SceneContext.pLights->SetDirectionalLight({ 0,66.1346436f,-21.1850471f }, { -0.740129888f, 0.597205281f, 0.309117377f });
+	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, 0.597205281f, 0.309117377f });
 
 	//Pause menu
 	auto pPauseGo = new GameObject();
@@ -126,6 +128,13 @@ void MyGameScene::Initialize()
 	CreateStar();
 	CreateCoins();
 	CreateKoopaTroopas();
+
+	//Font
+	m_pFont = ContentManager::Load<SpriteFont>(L"SpriteFonts/Consolas_32.fnt");
+	m_TextPos.x = 150.f;
+	m_TextPos.y = 300.f;
+
+	m_NrCoins = 0;
 
 }
 
@@ -388,7 +397,6 @@ void MyGameScene::CreateKoopaTroopas()
 	auto koopaBody4 = pKoopaGo4->AddComponent(new RigidBodyComponent());
 	koopaBody4->AddCollider(PxBoxGeometry{ .35f, .75f, .75f }, *pDefaultMaterial, true, physx::PxTransform{ 0.f, -0.5f, -0.5 });
 	pKoopaGo4->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-
 	//koopaBody->SetKinematic(true);
 	pKoopaGo4->GetTransform()->Translate(m_OriginalKoopaPosition4);
 	koopaBody4->SetConstraint(RigidBodyConstraint::TransY, false);
@@ -401,6 +409,7 @@ void MyGameScene::CreateKoopaTroopas()
 }
 void MyGameScene::Update()
 {
+	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode(std::to_string(m_NrCoins)), m_TextPos, XMFLOAT4{ 1.f,1.f, 1.f, 1.f });
 	m_pPauseMenu->GetTexture()->SetDimenson({ m_SceneContext.windowWidth, m_SceneContext.windowHeight });
 	m_pDeathScreen->GetTexture()->SetDimenson({ m_SceneContext.windowWidth, m_SceneContext.windowHeight });
 	m_pWinScreen->GetTexture()->SetDimenson({ m_SceneContext.windowWidth, m_SceneContext.windowHeight });
@@ -455,7 +464,7 @@ void MyGameScene::Update()
 	{
 		++m_KoopasKilled;
 		m_KillKoopaTroopa = false;
-		m_pCharacter->AddForce(0.f, 20.f, 0.f);
+		m_pCharacter->AddForce(0.f, 30.f, 0.f);
 		m_pObjectToKill->GetTransform()->Translate(0.f, 0.f, 0.f);
 	}
 	if (!m_pUI[0]->GetComponent<SpriteComponent>()->IsEnabled() && !m_pDeathScreen->IsEnabled() && !m_pWinScreen->IsEnabled())
@@ -493,22 +502,24 @@ void MyGameScene::Update()
 
 	}
 
+
 }
 
 void MyGameScene::OnGUI()
 {
 }
 
-void MyGameScene::OnTriggerCallBack(GameObject* pTriggerObject, GameObject* pOtherObject, PxTriggerAction /*action*/)
+void MyGameScene::OnTriggerCallBack(GameObject* pTriggerObject, GameObject* pOtherObject, PxTriggerAction action)
 {
+	
 	if (pTriggerObject->GetTag() == L"Star" && pOtherObject->GetTag() == L"Mario")
 	{
 		m_pWinScreen->Enable(true);
 	}
-	if (pTriggerObject->GetTag() == L"Coin" && pOtherObject->GetTag() == L"Mario")
+	if (pTriggerObject->GetTag() == L"Coin" && pOtherObject->GetTag() == L"Mario" && action == PxTriggerAction::ENTER)
 	{
 		SoundManager::Get()->GetSystem()->playSound(m_pCoinSound, m_pSoundEffectGroup, false, nullptr);
-
+		m_NrCoins++;
 		bool healthEnabled = false;
 		for (int i = 0; i < 6; ++i)
 		{
@@ -521,7 +532,7 @@ void MyGameScene::OnTriggerCallBack(GameObject* pTriggerObject, GameObject* pOth
 		}
 		pTriggerObject->GetTransform()->Translate(0.f, 0.f, 0.f);
 	}
-	if (pTriggerObject->GetTag() == L"KoopaTroopa" && pOtherObject->GetTag() == L"Mario")
+	if (pTriggerObject->GetTag() == L"KoopaTroopa" && pOtherObject->GetTag() == L"Mario" && action == PxTriggerAction::ENTER)
 	{
 		if (pTriggerObject->GetTransform()->GetWorldPosition().y > pOtherObject->GetTransform()->GetWorldPosition().y)
 		{
@@ -570,3 +581,9 @@ void MyGameScene::ResetScene()
 		m_pUI[i]->GetComponent<SpriteComponent>()->Enable(true);
 	}
 }
+//void MyGameScene::PostDraw()
+//{
+//
+//		ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
+//	
+//}

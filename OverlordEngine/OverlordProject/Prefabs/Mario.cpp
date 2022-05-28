@@ -27,7 +27,6 @@ void Mario::Initialize(const SceneContext& sceneContext)
 	//Mesh
 	const auto pMarioObject = new GameObject;
 	auto pMarioMesh = pMarioObject->AddComponent(new ModelComponent(L"Meshes/Mario.ovm"));
-	pMarioMesh->SetMaterial(MaterialManager::Get()->CreateMaterial<ColorMaterial>());
 	pMarioObject->GetTransform()->Translate(0, m_yPosOffset, 0);
 	pMarioObject->GetTransform()->Scale(m_Scale);
 	m_pModelComponent = pMarioMesh;
@@ -173,17 +172,66 @@ void Mario::Update(const SceneContext& sceneContext)
 				m_TotalPitch = m_MaxPitch;
 
 			}
-			// *-1 to get inverse forward vecter *15 to get distance
-			cameraForward.x *= m_OriginalCameraDistance;
-			cameraForward.y *= m_OriginalCameraDistance;
-			cameraForward.z *= m_OriginalCameraDistance;
-			//float distance = 20.f;
-			//m_pCameraComponent->GetTransform()->Translate(GetTransform()->GetPosition().x, GetTransform()->GetPosition().y, GetTransform()->GetPosition().z);
-			m_pCameraComponent->GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
-			m_pCameraComponent->GetTransform()->Translate(cameraForward);
-
-
 			PxRaycastBuffer raycastBuffer;
+
+			auto newCameraForward = m_pCameraComponent->GetTransform()->GetForward();
+			newCameraForward.x *= m_CameraDistance;
+			newCameraForward.y *= m_CameraDistance;
+			newCameraForward.z *= m_CameraDistance;
+
+			PxVec3 camOrigin = { m_pCameraComponent->GetTransform()->GetWorldPosition().x,
+			m_pCameraComponent->GetTransform()->GetWorldPosition().y,
+			m_pCameraComponent->GetTransform()->GetWorldPosition().z };
+			PxVec3 camForwardVec =
+			{
+				m_pCameraComponent->GetTransform()->GetForward().x,
+				m_pCameraComponent->GetTransform()->GetForward().y,
+				m_pCameraComponent->GetTransform()->GetForward().z
+			};
+			m_pCameraComponent->GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
+			bool regularCalculation = true;
+
+			PxVec3 playerOrigin = { GetTransform()->GetWorldPosition().x,
+				GetTransform()->GetWorldPosition().y,
+				GetTransform()->GetWorldPosition().z };
+
+			//if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(camOrigin, camForwardVec,
+			//	(m_CameraDistance * -1) - 5.f, raycastBuffer))
+			//{
+			//	if (static_cast<BaseComponent*>(raycastBuffer.getAnyHit(static_cast<PxU32>(0)).actor->userData)->GetGameObject()->GetTag() == L"Level")
+			//	{
+			//		regularCalculation = false;
+			//		m_pCameraComponent->GetTransform()->Translate(XMVECTOR{ camOrigin.x - raycastBuffer.block.position.x
+			//		, camOrigin.y - raycastBuffer.block.position.y
+			//		, camOrigin.z- raycastBuffer.block.position.z });
+			//	}
+			//}
+			if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(playerOrigin, camForwardVec * -1,
+				(m_CameraDistance * -1), raycastBuffer))
+			{
+				if (static_cast<BaseComponent*>(raycastBuffer.getAnyHit(static_cast<PxU32>(0)).actor->userData)->GetGameObject()->GetTag() == L"Level")
+				{
+					regularCalculation = false;
+					m_pCameraComponent->GetTransform()->Translate(XMVECTOR{ /*camOrigin.x -*/ raycastBuffer.block.position.x
+					, /*camOrigin.y -*/ raycastBuffer.block.position.y
+					, /*camOrigin.z -*/ raycastBuffer.block.position.z });
+				}
+			}
+			if(regularCalculation)
+			
+			{
+				cameraForward.x *= m_OriginalCameraDistance;
+				cameraForward.y *= m_OriginalCameraDistance;
+
+				cameraForward.z *= m_OriginalCameraDistance;
+				//m_pCameraComponent->GetTransform()->Translate(cameraForward);
+				m_pCameraComponent->GetTransform()->Translate(cameraForward);
+			}
+			m_pCameraComponent->GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
+
+
+
+			//PxRaycastBuffer raycastBuffer;
 			PxVec3 origin = { m_pCameraComponent->GetTransform()->GetPosition().x,
 			m_pCameraComponent->GetTransform()->GetPosition().y,
 			m_pCameraComponent->GetTransform()->GetPosition().z };
@@ -285,48 +333,6 @@ void Mario::Update(const SceneContext& sceneContext)
 			m_IsRunning = false;
 			//m_CharacterDesc.maxMoveSpeed = m_WalkSpeed;
 		}
-
-		PxVec3 camOrigin = { m_pCameraComponent->GetTransform()->GetWorldPosition().x,
-		m_pCameraComponent->GetTransform()->GetWorldPosition().y,
-		m_pCameraComponent->GetTransform()->GetWorldPosition().z };
-		PxVec3 camForwardVec =
-		{
-			m_pCameraComponent->GetTransform()->GetForward().x,
-			m_pCameraComponent->GetTransform()->GetForward().y,
-			m_pCameraComponent->GetTransform()->GetForward().z
-		};
-		PxRaycastBuffer raycastBuffer;
-		//bool moveCamForward = true;
-	//	while (moveCamForward)
-		//{
-		//	auto newCameraForward = m_pCameraComponent->GetTransform()->GetForward();
-		//	newCameraForward.x *= m_CameraDistance;
-		//	newCameraForward.y *= m_CameraDistance;
-		//	newCameraForward.z *= m_CameraDistance;
-
-		//	m_pCameraComponent->GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
-		//	m_pCameraComponent->GetTransform()->Translate(newCameraForward);
-		//	while()
-		//	if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(camOrigin, camForwardVec,
-		//		(m_CameraDistance * -1) - 8.f, raycastBuffer))
-		//	{
-		//		const auto& go = static_cast<BaseComponent*>(raycastBuffer.getAnyHit(static_cast<PxU32>(0)).actor->userData);
-		//		while (go->GetGameObject()->GetTag() == L"Level")
-		//		{
-		//			m_CameraDistance++;
-		//		}
-		//		//std::cout << "Origin: " << camOrigin.x << ", " << camOrigin.y << " " << camOrigin.z << "\n";
-		//		//std::cout << "Forward: " << camForwardVec.x << ", " << camForwardVec.y << " " << camForwardVec.z << "\n";
-		//	}
-		//	else
-		//	{
-		//		moveCamForward = false;
-		//	}
-		//	
-		//}
-
-
-
 		auto camForward = XMVector3Normalize(XMLoadFloat3(&m_pCameraComponent->GetTransform()->GetForward()));
 		auto camRight = XMVector3Normalize(XMLoadFloat3(&m_pCameraComponent->GetTransform()->GetRight()));
 
@@ -398,6 +404,8 @@ void Mario::Update(const SceneContext& sceneContext)
 		//Else If the jump action is triggered
 
 		//This part is very fragile with all the booleans, please don't mess with it --
+		PxRaycastBuffer raycastBuffer;
+
 		if (!SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, m_RayCastDistance, raycastBuffer))
 		{
 
@@ -495,10 +503,7 @@ void Mario::Update(const SceneContext& sceneContext)
 			else if (ducked)
 			{
 				m_MovementState = MovementState::BACKFLIP;
-
 				m_TotalVelocity.y = m_CharacterDesc.JumpSpeed * 1.5f;
-				//m_TotalVelocity.x = m_MoveSpeed * -m_CurrentDirection.x * m_BackFlipSpeed;
-				//m_TotalVelocity.z = m_MoveSpeed * -m_CurrentDirection.z * m_BackFlipSpeed;
 			}
 		}
 		else
@@ -532,18 +537,16 @@ void Mario::Update(const SceneContext& sceneContext)
 			}
 			m_TotalVelocity.y = 0;
 		}
-		//Do another raycast to check if the character should be falling because .25f is too shallow
-		//std::cout << m_TotalVelocity.x << " " << m_TotalVelocity.y << " " << m_TotalVelocity.z <<" "<<m_MoveSpeed << " \n";
 		//Finnicky till here
 		// 
 		//************
 		//DISPLACEMENT
+		//if (m_MovementState == MovementState::FALLING && m_TotalVelocity.y == 0.f)
+		//{
+		//	AddForce(0.f, 10.f, 0.f);
+		//}
 		XMFLOAT3 displacement = { m_TotalVelocity.x * elapsedTime, m_TotalVelocity.y * elapsedTime, m_TotalVelocity.z * elapsedTime };
 		m_pControllerComponent->Move(displacement);
-		//The displacement required to move the Character Controller (ControllerComponent::Move) can be calculated using our TotalVelocity (m/s)
-		//Calculate the displacement (m) for the current frame and move the ControllerComponent
-		//The above is a simple implementation of Movement Dynamics, adjust the code to further improve the movement logic and behaviour.
-		//Also, it can be usefull to use a seperate RayCast to check if the character is grounded (more responsive)
 		CheckStateChanged();
 	}
 }
@@ -641,8 +644,8 @@ void Mario::SetGameMode(GameMode gameMode)
 	{
 	case GameMode::THIRDPERSON:
 		m_pCameraComponent->GetTransform()->Translate(m_pCameraComponent->GetTransform()->GetForward().x,
-			m_pCameraComponent->GetTransform()->GetForward().y + 1.f,
-			m_pCameraComponent->GetTransform()->GetForward().z - 10.f);
+			m_pCameraComponent->GetTransform()->GetForward().y ,
+			m_pCameraComponent->GetTransform()->GetForward().z - m_CameraDistance);
 		break;
 	}
 }

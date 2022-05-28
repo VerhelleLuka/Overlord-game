@@ -2,7 +2,7 @@ float4x4 gWorld : WORLD;
 float4x4 gWorldViewProj : WORLDVIEWPROJECTION;
 float4x4 gWorldViewProj_Light;
 float3 gLightDirection = float3(-0.577f, -0.577f, 0.577f);
-float gShadowMapBias = 0.01f;
+float gShadowMapBias = 0.001f;
 
 Texture2D gDiffuseMap;
 Texture2D gShadowMap;
@@ -115,7 +115,7 @@ float EvaluateShadowMap(float4 lPos, float3 normal)
 
 
 	//calculate ilumination at fragment
-	float3 L = normalize(-gLightDirection);
+	float3 L = normalize(gLightDirection);
 	float ndotl = dot(normalize(normal), L);
 	return shadowFactor * ndotl + 0.5f;
 }

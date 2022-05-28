@@ -59,7 +59,7 @@ private:
 	XMFLOAT3 m_CurrentDirection{};					//Current/Last Direction based on Camera forward/right (Stored for deacceleration)
 
 	GameMode m_GameMode = GameMode::FIRSTPERSON;
-	const float m_MinPitch = -9.5f;					//Measured values
+	const float m_MinPitch = -8.5f;					//Measured values
 	const float m_MaxPitch = 75.f;
 	ModelComponent* m_pModelComponent;
 	//Rotation of the character mesh before camera rotation

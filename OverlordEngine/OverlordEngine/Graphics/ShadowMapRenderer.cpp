@@ -58,7 +58,6 @@ void ShadowMapRenderer::UpdateMeshFilter(const SceneContext& sceneContext, MeshF
 	pMeshFilter->BuildVertexBuffer(sceneContext, matTech.inputLayoutID, matTech.inputLayoutSize, matTech.pInputLayoutDescriptions);
 }
 
-
 void ShadowMapRenderer::Begin(const SceneContext& sceneContext)
 {
 	//TODO_W8(L"Implement Begin")
@@ -84,7 +83,7 @@ void ShadowMapRenderer::Begin(const SceneContext& sceneContext)
 	//		*eyePosition: Position of the Direction Light (SceneContext::pLights > Retrieve Directional Light)
 	//		*focusPosition: Calculate using the Direction Light position and direction
 	//- Use the Projection & View Matrix to calculate the ViewProjection of this Light, store in m_LightVP
-	//auto projMat = XMMatrixOrthographicLH(100.f * sceneContext.aspectRatio, 100.f, 0.1f, 500.f);
+	auto projMat = XMMatrixOrthographicLH(100.f * sceneContext.aspectRatio, 100.f, 0.1f, 500.f);
 	XMVECTOR dirLightPos = { sceneContext.pLights->GetDirectionalLight().position.x,
 		sceneContext.pLights->GetDirectionalLight().position.y,
 		sceneContext.pLights->GetDirectionalLight().position.z,
@@ -96,11 +95,10 @@ void ShadowMapRenderer::Begin(const SceneContext& sceneContext)
 	sceneContext.pLights->GetDirectionalLight().direction.w };
 	auto focusPos = focusPosVec + dirLightPos;
 	auto viewMat = XMMatrixLookAtLH(dirLightPos, focusPos, dirLightPos);
-	XMMATRIX projMat = XMLoadFloat4x4(&sceneContext.pCamera->GetProjection());
+	//XMMATRIX projMat = XMLoadFloat4x4(&sceneContext.pCamera->GetProjection());
 	//XMMATRIX viewMat = XMLoadFloat4x4(&sceneContext.pCamera->GetView());
 	//XMMATRIX viewProj = XMMatrixMultiply(viewMat, projMat);
 	XMStoreFloat4x4(&m_LightVP, viewMat * projMat);
-
 
 
 	//3. Update this matrix (m_LightVP) on the ShadowMapMaterial effect

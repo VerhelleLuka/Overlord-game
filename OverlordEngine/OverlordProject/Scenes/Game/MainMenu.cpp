@@ -3,6 +3,9 @@
 
 void MainMenu::Initialize()
 {
+	m_SceneContext.settings.enableOnGUI = false;
+	m_SceneContext.settings.drawGrid = false;
+	m_SceneContext.settings.showInfoOverlay = false;
 	m_SceneContext.pLights->SetDirectionalLight({ 0,66.1346436f,-21.1850471f }, { -0.740129888f, 0.597205281f, 0.309117377f });
 	
 	auto pGo = new GameObject();
