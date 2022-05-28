@@ -36,6 +36,8 @@ public:
 	bool GetPaused() const { return m_IsPaused; }
 	void SetPaused(bool isPaused) { m_IsPaused = isPaused; }
 
+	void AddForce(float x, float y, float z);
+
 protected:
 	void Initialize(const SceneContext&) override;
 	void Update(const SceneContext&) override;
@@ -123,6 +125,9 @@ private:
 
 	//running
 	const float m_RunSpeedMultiplier = 1.5f;
+
+	//raycast
+	const float m_RayCastDistance = 0.07f;
 
 };
 

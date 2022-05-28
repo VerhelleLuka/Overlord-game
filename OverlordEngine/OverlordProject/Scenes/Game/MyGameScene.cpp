@@ -9,8 +9,11 @@
 #include <Materials/Shadow/DiffuseMaterial_Shadow.h>
 #include "Prefabs/Star.h"
 #include "Prefabs/Goomba.h"
+#include "Prefabs/Coin.h"
 void MyGameScene::Initialize()
 {
+	m_KoopasKilled = 0;
+	m_ReallyEnableStar = 0;
 	m_SceneContext.settings.enableOnGUI = true;
 	m_SceneContext.settings.drawGrid = false;
 
@@ -106,8 +109,18 @@ void MyGameScene::Initialize()
 	pPauseGo->AddComponent(m_pPauseMenu);
 	m_pPauseMenu->Enable(false);
 	AddChild(pPauseGo);
-
-
+	//Death screen
+	auto pDeathGo = new GameObject();
+	m_pDeathScreen = new SpriteComponent(L"Textures/Death.png");
+	pDeathGo->AddComponent(m_pDeathScreen);
+	m_pDeathScreen->Enable(false);
+	AddChild(pDeathGo);
+	//Win screen
+	auto pWinGo = new GameObject();
+	m_pWinScreen = new SpriteComponent(L"Textures/winscreen.png");
+	pWinGo->AddComponent(m_pWinScreen);
+	m_pWinScreen->Enable(false);
+	AddChild(pWinGo);
 
 	//Sound effects
 	auto pSoundSystem = SoundManager::Get()->GetSystem();
@@ -118,65 +131,66 @@ void MyGameScene::Initialize()
 	pSoundSystem->createStream("Resources/Sounds/pause.wav", FMOD_DEFAULT, nullptr, &m_pPauseSound);
 
 	CreateStar();
-	CreateKoopaTroopa();
-	
+	CreateCoins();
+	CreateKoopaTroopas();
+
 }
 
 void MyGameScene::CreateLevel()
 {
 	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
-	
-		//LEVEL MATERIALS
-		const auto pDirtMat = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pDirtMat->SetDiffuseTexture(L"Textures/Dirt.bmp");
 
-		const auto pGrassMat = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pGrassMat->SetDiffuseTexture(L"Textures/Grass.bmp");
+	//LEVEL MATERIALS
+	const auto pDirtMat = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pDirtMat->SetDiffuseTexture(L"Textures/Dirt.bmp");
 
-		const auto pWalkMat = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pWalkMat->SetDiffuseTexture(L"Textures/Pathway.bmp");
+	const auto pGrassMat = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pGrassMat->SetDiffuseTexture(L"Textures/Grass.bmp");
 
-		const auto pWoodMat = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pWoodMat->SetDiffuseTexture(L"Textures/Wood.bmp");
+	const auto pWalkMat = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pWalkMat->SetDiffuseTexture(L"Textures/Pathway.bmp");
 
-		const auto pFancyCobble = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pFancyCobble->SetDiffuseTexture(L"Textures/FancyCobble.bmp");
+	const auto pWoodMat = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pWoodMat->SetDiffuseTexture(L"Textures/Wood.bmp");
 
-		const auto pCobble = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pCobble->SetDiffuseTexture(L"Textures/Cobble.bmp");
+	const auto pFancyCobble = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pFancyCobble->SetDiffuseTexture(L"Textures/FancyCobble.bmp");
 
-		const auto pRock = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pRock->SetDiffuseTexture(L"Textures/Rock.bmp");
+	const auto pCobble = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pCobble->SetDiffuseTexture(L"Textures/Cobble.bmp");
 
-		const auto pCaveRock = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pCaveRock->SetDiffuseTexture(L"Textures/CaveRock.bmp");
+	const auto pRock = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pRock->SetDiffuseTexture(L"Textures/Rock.bmp");
 
-		const auto pMarble = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pMarble->SetDiffuseTexture(L"Textures/Marble.bmp");
+	const auto pCaveRock = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pCaveRock->SetDiffuseTexture(L"Textures/CaveRock.bmp");
 
-		const auto pFlowerStems = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pFlowerStems->SetDiffuseTexture(L"Textures/FlowerStems.bmp");
+	const auto pMarble = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pMarble->SetDiffuseTexture(L"Textures/Marble.bmp");
 
-		const auto pFlowers = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pFlowers->SetDiffuseTexture(L"Textures/Flower.bmp");
+	const auto pFlowerStems = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pFlowerStems->SetDiffuseTexture(L"Textures/FlowerStems.bmp");
 
-		const auto pThingy = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pThingy->SetDiffuseTexture(L"Textures/Thingy.bmp");
+	const auto pFlowers = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pFlowers->SetDiffuseTexture(L"Textures/Flower.bmp");
 
-		const auto pPlatform = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pPlatform->SetDiffuseTexture(L"Textures/Platform.bmp");
+	const auto pThingy = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pThingy->SetDiffuseTexture(L"Textures/Thingy.bmp");
 
-		const auto pCavernRock = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pCavernRock->SetDiffuseTexture(L"Textures/CavernRock.bmp");
+	const auto pPlatform = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pPlatform->SetDiffuseTexture(L"Textures/Platform.bmp");
 
-		const auto pMountainRock = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pMountainRock->SetDiffuseTexture(L"Textures/MountainRock.bmp");
+	const auto pCavernRock = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pCavernRock->SetDiffuseTexture(L"Textures/CavernRock.bmp");
 
-		const auto pBars = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pBars->SetDiffuseTexture(L"Textures/Bars.png");
+	const auto pMountainRock = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pMountainRock->SetDiffuseTexture(L"Textures/MountainRock.bmp");
 
-		const auto pBarbedWire = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
-		pBarbedWire->SetDiffuseTexture(L"Textures/BarbedWire.png");
+	const auto pBars = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pBars->SetDiffuseTexture(L"Textures/Bars.png");
+
+	const auto pBarbedWire = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
+	pBarbedWire->SetDiffuseTexture(L"Textures/BarbedWire.png");
 	//const auto pGrassMat = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow>();
 	//pGrassMat->SetDiffuseTexture(L"Textures/Grass.bmp");
 	//LEVEL
@@ -229,7 +243,6 @@ void MyGameScene::CreateStar()
 	pStarGo->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	starBody->SetCollisionGroup(CollisionGroup::Group1);
 	starBody->SetKinematic(true);
-	pStarGo->GetTransform()->Translate(m_OriginalStarPosition);
 	m_pStar = pStarGo;
 
 
@@ -251,29 +264,120 @@ void MyGameScene::CreateStar()
 	m_pStar->SetTag(L"Star");
 }
 
-void MyGameScene::CreateKoopaTroopa()
+void MyGameScene::CreateCoins()
+{
+	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
+
+
+	//Particle 
+	ParticleEmitterSettings settings{};
+	settings.velocity = { 0.f,1.f,0.f };
+	settings.minSize = .1f;
+	settings.maxSize = .5f;
+	settings.minEnergy = .5f;
+	settings.maxEnergy = 1.f;
+	settings.minScale = .5f;
+	settings.maxScale = 1.f;
+	settings.minEmitterRadius = 0.1f;
+	settings.maxEmitterRadius = 1.5f;
+	settings.color = { 1.f,1.f,1.f, .6f };
+	auto pEmitter = m_pCoin->AddComponent(new ParticleEmitterComponent(L"Textures/StarSparkle.png", settings, 10));
+	m_pCoin->SetParticle(pEmitter);
+	pEmitter->SetActive(true);
+	m_pCoin->SetTag(L"Coin");
+
+
+	auto pCoinGo = new Coin();
+	AddChild(pCoinGo);
+	auto coinBody = pCoinGo->AddComponent(new RigidBodyComponent());
+	coinBody->AddCollider(PxBoxGeometry{ 1.f, 1.f, 1.f }, *pDefaultMaterial, true);
+	pCoinGo->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	coinBody->SetCollisionGroup(CollisionGroup::Group1);
+	coinBody->SetKinematic(true);
+	m_pCoin = pCoinGo;
+
+
+
+}
+void MyGameScene::CreateKoopaTroopas()
 {
 	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
 
 	const auto pKoopaGo = new KoopaTroopa();
 	auto koopaBody = pKoopaGo->AddComponent(new RigidBodyComponent());
-	koopaBody->AddCollider(PxBoxGeometry{ .35f, .75f, .75f }, *pDefaultMaterial, true, physx::PxTransform{0.f, -0.5f, -0.5});
+	koopaBody->AddCollider(PxBoxGeometry{ .35f, .75f, .75f }, *pDefaultMaterial, true, physx::PxTransform{ 0.f, -0.5f, -0.5 });
 	pKoopaGo->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
 	//koopaBody->SetKinematic(true);
-	pKoopaGo->GetTransform()->Translate(m_OriginalGoombaPosition);
+	pKoopaGo->GetTransform()->Translate(m_OriginalKoopaPosition);
 	koopaBody->SetConstraint(RigidBodyConstraint::TransY, false);
-	koopaBody->SetCollisionGroup(CollisionGroup::Group3);
-	koopaBody->SetCollisionIgnoreGroups(CollisionGroup::Group0);
+
 	m_pKoopaTroopa = pKoopaGo;
 	m_pKoopaTroopa->SetTag(L"KoopaTroopa");
 	m_KillKoopaTroopa = false;
 	AddChild(m_pKoopaTroopa);
+
+
+	const auto pKoopaGo1 = new KoopaTroopa();
+	auto koopaBody1 = pKoopaGo1->AddComponent(new RigidBodyComponent());
+	koopaBody1->AddCollider(PxBoxGeometry{ .35f, .75f, .75f }, *pDefaultMaterial, true, physx::PxTransform{ 0.f, -0.5f, -0.5 });
+	pKoopaGo1->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+	//koopaBody->SetKinematic(true);
+	pKoopaGo1->GetTransform()->Translate(m_OriginalKoopaPosition1);
+	koopaBody1->SetConstraint(RigidBodyConstraint::TransY, false);
+
+	m_pKoopaTroopa1 = pKoopaGo1;
+	m_pKoopaTroopa1->SetTag(L"KoopaTroopa");
+	AddChild(m_pKoopaTroopa1);
+
+
+	const auto pKoopaGo2 = new KoopaTroopa();
+	auto koopaBody2 = pKoopaGo2->AddComponent(new RigidBodyComponent());
+	koopaBody2->AddCollider(PxBoxGeometry{ .35f, .75f, .75f }, *pDefaultMaterial, true, physx::PxTransform{ 0.f, -0.5f, -0.5 });
+	pKoopaGo2->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+	//koopaBody->SetKinematic(true);
+	pKoopaGo2->GetTransform()->Translate(m_OriginalKoopaPosition2);
+	koopaBody2->SetConstraint(RigidBodyConstraint::TransY, false);
+
+	m_pKoopaTroopa2 = pKoopaGo2;
+	m_pKoopaTroopa2->SetTag(L"KoopaTroopa");
+	AddChild(m_pKoopaTroopa2);
+
+	const auto pKoopaGo3 = new KoopaTroopa();
+	auto koopaBody3 = pKoopaGo3->AddComponent(new RigidBodyComponent());
+	koopaBody3->AddCollider(PxBoxGeometry{ .35f, .75f, .75f }, *pDefaultMaterial, true, physx::PxTransform{ 0.f, -0.5f, -0.5 });
+	pKoopaGo3->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+	//koopaBody->SetKinematic(true);
+	pKoopaGo3->GetTransform()->Translate(m_OriginalKoopaPosition3);
+	koopaBody3->SetConstraint(RigidBodyConstraint::TransY, false);
+
+	m_pKoopaTroopa3 = pKoopaGo3;
+	m_pKoopaTroopa3->SetTag(L"KoopaTroopa");
+	AddChild(m_pKoopaTroopa3);
+
+	const auto pKoopaGo4 = new KoopaTroopa();
+	auto koopaBody4 = pKoopaGo4->AddComponent(new RigidBodyComponent());
+	koopaBody4->AddCollider(PxBoxGeometry{ .35f, .75f, .75f }, *pDefaultMaterial, true, physx::PxTransform{ 0.f, -0.5f, -0.5 });
+	pKoopaGo4->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+	//koopaBody->SetKinematic(true);
+	pKoopaGo4->GetTransform()->Translate(m_OriginalKoopaPosition4);
+	koopaBody4->SetConstraint(RigidBodyConstraint::TransY, false);
+
+	m_pKoopaTroopa4 = pKoopaGo4;
+	m_pKoopaTroopa4->SetTag(L"KoopaTroopa");
+	AddChild(m_pKoopaTroopa4);
+
+
 }
 void MyGameScene::Update()
 {
-
 	m_pPauseMenu->GetTexture()->SetDimenson({ m_SceneContext.windowWidth, m_SceneContext.windowHeight });
+	m_pDeathScreen->GetTexture()->SetDimenson({ m_SceneContext.windowWidth, m_SceneContext.windowHeight });
+	m_pWinScreen->GetTexture()->SetDimenson({ m_SceneContext.windowWidth, m_SceneContext.windowHeight });
 	if (!m_SceneInitialized)
 	{
 		m_PixelationTimer += m_SceneContext.pGameTime->GetElapsed();
@@ -291,7 +395,7 @@ void MyGameScene::Update()
 			m_pPixelation->SetIsEnabled(false);
 		}
 	}
-	if (InputManager::IsKeyboardKey(InputState::pressed, VK_ESCAPE) )
+	if (InputManager::IsKeyboardKey(InputState::pressed, VK_ESCAPE) && !m_pDeathScreen->IsEnabled() && !m_pWinScreen->IsEnabled())
 	{
 		if (!m_pCharacter->GetPaused())
 		{
@@ -323,23 +427,62 @@ void MyGameScene::Update()
 	}
 	if (m_KillKoopaTroopa)
 	{
-		RemoveChild(m_pKoopaTroopa);
+		++m_KoopasKilled;
+		m_KillKoopaTroopa = false;
+		m_pCharacter->AddForce(0.f, 20.f, 0.f);
+		m_pObjectToKill->GetTransform()->Translate(0.f, 0.f, 0.f);
+	}
+	if (!m_pUI[0]->GetComponent<SpriteComponent>()->IsEnabled() && !m_pDeathScreen->IsEnabled() && !m_pWinScreen->IsEnabled())
+	{
+
+		SoundManager::Get()->GetSystem()->playSound(m_pGameOverSound, m_pSoundEffectGroup, false, nullptr);
+		m_pDeathScreen->Enable(true);
+		//ResetScene();
+	}
+	if (m_pDeathScreen->IsEnabled() || m_pWinScreen->IsEnabled())
+	{
+		if (InputManager::IsKeyboardKey(InputState::pressed, VK_ESCAPE))
+		{
+			m_pDeathScreen->Enable(false);
+			m_pWinScreen->Enable(false);
+			ResetScene();
+
+			SceneManager::Get()->PreviousScene();
+
+		}
+		if (InputManager::IsKeyboardKey(InputState::pressed, VK_SPACE))
+		{
+			m_pDeathScreen->Enable(false);
+			m_pWinScreen->Enable(false);
+
+			ResetScene();
+
+		}
+
+	}
+	if (m_KoopasKilled >= 5)
+	{
+		m_pStar->GetTransform()->Translate(m_OriginalStarPosition);
+		m_KoopasKilled = 0;
+
 	}
 
 }
 
 void MyGameScene::OnGUI()
 {
-	//ImGui::SliderInt("foij", &m_MaterialID, 0, 22);
-	//m_pLevelMode->SetMaterial(m_pMat, UINT8(m_MaterialID));
-
 }
 
 void MyGameScene::OnTriggerCallBack(GameObject* pTriggerObject, GameObject* pOtherObject, PxTriggerAction /*action*/)
 {
 	if (pTriggerObject->GetTag() == L"Star" && pOtherObject->GetTag() == L"Mario")
 	{
-		ResetScene();
+		++m_ReallyEnableStar;
+		if (m_ReallyEnableStar > 2)
+		{
+			m_pWinScreen->Enable(true);
+
+		}
 	}
 	if (pTriggerObject->GetTag() == L"KoopaTroopa" && pOtherObject->GetTag() == L"Mario")
 	{
@@ -354,23 +497,38 @@ void MyGameScene::OnTriggerCallBack(GameObject* pTriggerObject, GameObject* pOth
 					++amountDisabled;
 					m_pUI[i]->GetComponent<SpriteComponent>()->EnableWithDelay(false, float(amountDisabled));
 				}
-				if (!m_pUI[0]->GetComponent<SpriteComponent>()->IsEnabled())
-				{
-					//Kill mario
-				}
+
 			}
 		}
 		else
 		{
 			m_KillKoopaTroopa = true;
-
+			dynamic_cast<KoopaTroopa*>(pTriggerObject)->SetDead(true);
+			m_pObjectToKill = pTriggerObject;
 		}
 	}
 }
+
 
 void MyGameScene::ResetScene()
 {
 	m_pCharacter->GetTransform()->Translate(m_OriginalPosition);
 	m_pPauseMenu->Enable(false);
 	m_pCharacter->SetPaused(false);
+	m_pDeathScreen->Enable(false);
+	m_pWinScreen->Enable(false);
+
+	m_pKoopaTroopa->GetTransform()->Translate(m_OriginalKoopaPosition);
+	m_pKoopaTroopa1->GetTransform()->Translate(m_OriginalKoopaPosition1);
+	m_pKoopaTroopa2->GetTransform()->Translate(m_OriginalKoopaPosition2);
+	m_pKoopaTroopa3->GetTransform()->Translate(m_OriginalKoopaPosition3);
+	m_pKoopaTroopa4->GetTransform()->Translate(m_OriginalKoopaPosition4);
+
+	m_pStar->GetTransform()->Translate(0.f, 0.f, 0.f);
+	m_KoopasKilled = 0;
+
+	for (int i = 0; i < 6; ++i)
+	{
+		m_pUI[i]->GetComponent<SpriteComponent>()->Enable(true);
+	}
 }

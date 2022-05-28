@@ -1,16 +1,19 @@
+
 #pragma once
 #include <stdafx.cpp>
+#include "Character.h"
 
-class Star : public GameObject
+
+class Coin : public GameObject
 {
 public:
-	Star() = default;
-	~Star() override = default;
+	Coin() = default;
+	~Coin() override = default;
 
-	Star(const Star& other) = delete;
-	Star(Star&& other) noexcept = delete;
-	Star& operator=(const Star& other) = delete;
-	Star& operator=(Star&& other) noexcept = delete;
+	Coin(const Coin& other) = delete;
+	Coin(Coin&& other) noexcept = delete;
+	Coin& operator=(const Coin& other) = delete;
+	Coin& operator=(Coin&& other) noexcept = delete;
 
 	void SetParticle(ParticleEmitterComponent* particle) { m_pParticle = particle; }
 
@@ -19,8 +22,8 @@ protected:
 	void Update(const SceneContext&) override;
 
 private:
-	
-		//Animation stuff
+
+	//Animation stuff
 	ModelComponent* m_pModelComponent;
 	float m_Rotation;
 

@@ -4,6 +4,7 @@
 #include <Materials/ColorMaterial.h>
 #include "Materials/Shadow/DiffuseMaterial_Shadow.h"
 KoopaTroopa::KoopaTroopa()
+	:m_IsDead(false)
 {}
 
 void KoopaTroopa::Initialize(const SceneContext& /*sceneContext*/)
@@ -28,5 +29,20 @@ void KoopaTroopa::Initialize(const SceneContext& /*sceneContext*/)
 
 void KoopaTroopa::Update(const SceneContext& /*sceneContext*/)
 {
+	//PxRaycastBuffer raycastBuffer;
+	//PxVec3 origin = { GetTransform()->GetPosition().x,
+	//GetTransform()->GetPosition().y + 0.25f  ,
+	//GetTransform()->GetPosition().z };
+	//PxVec3 direction = { GetTransform()->GetUp().x,
+	// GetTransform()->GetUp().y,
+	// GetTransform()->GetUp().z };
+
+	//if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, direction, .5f, raycastBuffer))
+	//{
+	//	GetComponent<RigidBodyComponent>()->SetConstraint(RigidBodyConstraint::TransY, true);
+	//	GetComponent<RigidBodyComponent>()->SetKinematic(false);
+	//	std::cout << "Hye\n";
+	//}
+
 }
 

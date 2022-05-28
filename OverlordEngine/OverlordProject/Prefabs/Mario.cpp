@@ -360,8 +360,9 @@ void Mario::Update(const SceneContext& sceneContext)
 		//Else If the jump action is triggered
 
 		//This part is very fragile with all the booleans, please don't mess with it --
-		if (!SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer))
+		if (!SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, m_RayCastDistance, raycastBuffer))
 		{
+
 			m_pParticle->SetActive(false);
 
 			m_IsGrounded = false;
@@ -410,11 +411,12 @@ void Mario::Update(const SceneContext& sceneContext)
 				}
 			}
 		}
-		else if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, .1f, raycastBuffer) && sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Jump))
+		else if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(origin, m_Down, m_RayCastDistance, raycastBuffer) && sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Jump))
 		{
+
 			m_IsGrounded = false;
 			m_MovementState = MovementState::JUMPING;
-
+			
 			m_pParticle->SetActive(true);
 			m_pParticle->SpawnNrOfParticles(150, sceneContext, m_pModelComponent->GetTransform()->GetForward().x ,1.f, m_pModelComponent->GetTransform()->GetForward().z );
 			m_pParticle->SetActive(false);
@@ -463,6 +465,8 @@ void Mario::Update(const SceneContext& sceneContext)
 		}
 		else
 		{
+		m_pControllerComponent->Move(XMFLOAT3{ 0.f, -m_RayCastDistance * 2, 0.f });
+
 			m_pParticle->SetActive(false);
 			m_IsGrounded = true;
 			m_LongJump = false;
@@ -500,7 +504,6 @@ void Mario::Update(const SceneContext& sceneContext)
 		m_pControllerComponent->Move(displacement);
 		//The displacement required to move the Character Controller (ControllerComponent::Move) can be calculated using our TotalVelocity (m/s)
 		//Calculate the displacement (m) for the current frame and move the ControllerComponent
-
 		//The above is a simple implementation of Movement Dynamics, adjust the code to further improve the movement logic and behaviour.
 		//Also, it can be usefull to use a seperate RayCast to check if the character is grounded (more responsive)
 		CheckStateChanged();
@@ -544,6 +547,13 @@ void Mario::CheckStateChanged()
 			break;
 		}
 	}
+}
+
+void Mario::AddForce(float x, float y, float z)
+{
+	m_TotalVelocity.x += x;
+	m_TotalVelocity.y += y;
+	m_TotalVelocity.z += z;
 }
 
 void Mario::DrawImGui()
