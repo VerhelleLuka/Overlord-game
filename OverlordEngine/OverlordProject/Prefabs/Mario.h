@@ -45,7 +45,8 @@ protected:
 private:
 	//Camera
 	CameraComponent* m_pCameraComponent{};
-	const float m_CameraDistance{ -15.f };
+	float m_CameraDistance;
+	const float m_OriginalCameraDistance{ -15.f };
 	ControllerComponent* m_pControllerComponent{};
 
 	CharacterDesc m_CharacterDesc;

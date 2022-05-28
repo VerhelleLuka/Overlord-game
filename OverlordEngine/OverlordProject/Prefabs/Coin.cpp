@@ -16,7 +16,7 @@ void Coin::Initialize(const SceneContext&)
 	pCoinMesh->SetMaterial(pCoinMat);
 
 	AddComponent(pCoinMesh);
-
+	GetTransform()->Scale(0.25f);
 	m_Rotation = 0.f;
 }
 

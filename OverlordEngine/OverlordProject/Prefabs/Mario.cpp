@@ -108,6 +108,7 @@ void Mario::Initialize(const SceneContext& sceneContext)
 
 	m_TotalYaw = 45.f;
 	m_TotalPitch = 10.f;
+	m_CameraDistance = m_OriginalCameraDistance;
 }
 
 void Mario::Update(const SceneContext& sceneContext)
@@ -173,15 +174,12 @@ void Mario::Update(const SceneContext& sceneContext)
 
 			}
 			// *-1 to get inverse forward vecter *15 to get distance
-			cameraForward.x *= m_CameraDistance;
-			cameraForward.y *= m_CameraDistance;
-			cameraForward.z *= m_CameraDistance;
+			cameraForward.x *= m_OriginalCameraDistance;
+			cameraForward.y *= m_OriginalCameraDistance;
+			cameraForward.z *= m_OriginalCameraDistance;
 			//float distance = 20.f;
-			m_pCameraComponent->GetTransform()->Translate(GetTransform()->GetPosition().x, GetTransform()->GetPosition().y, GetTransform()->GetPosition().z);
+			//m_pCameraComponent->GetTransform()->Translate(GetTransform()->GetPosition().x, GetTransform()->GetPosition().y, GetTransform()->GetPosition().z);
 			m_pCameraComponent->GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
-			//cameraForward.x += GetTransform()->GetPosition().x;
-			//cameraForward.y += GetTransform()->GetPosition().y;
-			//cameraForward.z += GetTransform()->GetPosition().z;
 			m_pCameraComponent->GetTransform()->Translate(cameraForward);
 
 
@@ -238,8 +236,8 @@ void Mario::Update(const SceneContext& sceneContext)
 		}
 
 		m_CharacterDesc.maxMoveSpeed = m_OriginalMaxMoveSpeed * 0.25f;
-		
-		if(!ducked)
+
+		if (!ducked)
 		{
 			m_CharacterDesc.maxMoveSpeed = m_OriginalMaxMoveSpeed;
 
@@ -247,7 +245,7 @@ void Mario::Update(const SceneContext& sceneContext)
 		PxVec3 origin = { m_pControllerComponent->GetFootPosition().x,
 			m_pControllerComponent->GetFootPosition().y,
 			m_pControllerComponent->GetFootPosition().z };
-		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Run) )
+		if (sceneContext.pInput->IsActionTriggered(m_CharacterDesc.actionId_Run))
 		{
 			m_IsRunning = true;
 			if (!ducked)
@@ -287,6 +285,47 @@ void Mario::Update(const SceneContext& sceneContext)
 			m_IsRunning = false;
 			//m_CharacterDesc.maxMoveSpeed = m_WalkSpeed;
 		}
+
+		PxVec3 camOrigin = { m_pCameraComponent->GetTransform()->GetWorldPosition().x,
+		m_pCameraComponent->GetTransform()->GetWorldPosition().y,
+		m_pCameraComponent->GetTransform()->GetWorldPosition().z };
+		PxVec3 camForwardVec =
+		{
+			m_pCameraComponent->GetTransform()->GetForward().x,
+			m_pCameraComponent->GetTransform()->GetForward().y,
+			m_pCameraComponent->GetTransform()->GetForward().z
+		};
+		PxRaycastBuffer raycastBuffer;
+		//bool moveCamForward = true;
+	//	while (moveCamForward)
+		//{
+		//	auto newCameraForward = m_pCameraComponent->GetTransform()->GetForward();
+		//	newCameraForward.x *= m_CameraDistance;
+		//	newCameraForward.y *= m_CameraDistance;
+		//	newCameraForward.z *= m_CameraDistance;
+
+		//	m_pCameraComponent->GetTransform()->Rotate(m_TotalPitch, m_TotalYaw, 0);
+		//	m_pCameraComponent->GetTransform()->Translate(newCameraForward);
+		//	while()
+		//	if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(camOrigin, camForwardVec,
+		//		(m_CameraDistance * -1) - 8.f, raycastBuffer))
+		//	{
+		//		const auto& go = static_cast<BaseComponent*>(raycastBuffer.getAnyHit(static_cast<PxU32>(0)).actor->userData);
+		//		while (go->GetGameObject()->GetTag() == L"Level")
+		//		{
+		//			m_CameraDistance++;
+		//		}
+		//		//std::cout << "Origin: " << camOrigin.x << ", " << camOrigin.y << " " << camOrigin.z << "\n";
+		//		//std::cout << "Forward: " << camForwardVec.x << ", " << camForwardVec.y << " " << camForwardVec.z << "\n";
+		//	}
+		//	else
+		//	{
+		//		moveCamForward = false;
+		//	}
+		//	
+		//}
+
+
 
 		auto camForward = XMVector3Normalize(XMLoadFloat3(&m_pCameraComponent->GetTransform()->GetForward()));
 		auto camRight = XMVector3Normalize(XMLoadFloat3(&m_pCameraComponent->GetTransform()->GetRight()));
@@ -350,7 +389,6 @@ void Mario::Update(const SceneContext& sceneContext)
 		//## Vertical Movement (Jump/Fall)
 		//If the Controller Component is NOT grounded (= freefall)
 
-		PxRaycastBuffer raycastBuffer;
 
 		//Direction is the down vector (inverse of up vector)
 
@@ -416,9 +454,9 @@ void Mario::Update(const SceneContext& sceneContext)
 
 			m_IsGrounded = false;
 			m_MovementState = MovementState::JUMPING;
-			
+
 			m_pParticle->SetActive(true);
-			m_pParticle->SpawnNrOfParticles(150, sceneContext, m_pModelComponent->GetTransform()->GetForward().x ,1.f, m_pModelComponent->GetTransform()->GetForward().z );
+			m_pParticle->SpawnNrOfParticles(150, sceneContext, m_pModelComponent->GetTransform()->GetForward().x, 1.f, m_pModelComponent->GetTransform()->GetForward().z);
 			m_pParticle->SetActive(false);
 			//Non long jump logic
 			if (!ducked)
@@ -465,7 +503,7 @@ void Mario::Update(const SceneContext& sceneContext)
 		}
 		else
 		{
-		m_pControllerComponent->Move(XMFLOAT3{ 0.f, -m_RayCastDistance * 2, 0.f });
+			m_pControllerComponent->Move(XMFLOAT3{ 0.f, -m_RayCastDistance * 2, 0.f });
 
 			m_pParticle->SetActive(false);
 			m_IsGrounded = true;

@@ -13,7 +13,6 @@
 void MyGameScene::Initialize()
 {
 	m_KoopasKilled = 0;
-	m_ReallyEnableStar = 0;
 	m_SceneContext.settings.enableOnGUI = true;
 	m_SceneContext.settings.drawGrid = false;
 
@@ -35,13 +34,6 @@ void MyGameScene::Initialize()
 	m_pCharacter->GetTransform()->Translate(m_OriginalPosition);
 	m_pCharacter->GetTransform()->Scale(0.5f, 0.5f, 0.5f);
 	m_pCharacter->SetTag(L"Mario");
-	//AddChild(m_pCharacter);
-
-	//const auto pKoopaTroopa = AddChild(new KoopaTroopa);
-	//pKoopaTroopa->GetTransform()->Translate(0.f, 25.f, 0.f);
-	//pKoopaTroopa->GetTransform()->Scale(100.f);
-	//AddChild(pKoopaTroopa);
-
 	//Simple Level
 	CreateLevel();
 
@@ -129,6 +121,7 @@ void MyGameScene::Initialize()
 	pSoundSystem->createStream("Resources/Sounds/oof.wav", FMOD_DEFAULT, nullptr, &m_pOofSound);
 	pSoundSystem->createStream("Resources/Sounds/star_appears.wav", FMOD_DEFAULT, nullptr, &m_pStarSound);
 	pSoundSystem->createStream("Resources/Sounds/pause.wav", FMOD_DEFAULT, nullptr, &m_pPauseSound);
+	pSoundSystem->createStream("Resources/Sounds/Coin.wav", FMOD_DEFAULT, nullptr, &m_pCoinSound);
 
 	CreateStar();
 	CreateCoins();
@@ -196,6 +189,7 @@ void MyGameScene::CreateLevel()
 	//LEVEL
 	const auto pLevelObject = AddChild(new GameObject());
 	const auto pLevelMesh = pLevelObject->AddComponent(new ModelComponent(L"Meshes/Bobomb_Battlefield2.ovm"));
+	pLevelObject->SetTag(L"Level");
 	//SET MATERIALS
 
 	pLevelMesh->SetMaterial(pGrassMat, 22);
@@ -237,6 +231,8 @@ void MyGameScene::CreateStar()
 	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
 
 	auto pStarGo = new Star();
+	pStarGo->GetTransform()->Translate(0.f, -10.f, 0.f);
+
 	AddChild(pStarGo);
 	auto starBody = pStarGo->AddComponent(new RigidBodyComponent());
 	starBody->AddCollider(PxBoxGeometry{ 1.f, 1.f, 1.f }, *pDefaultMaterial, true);
@@ -268,6 +264,9 @@ void MyGameScene::CreateCoins()
 {
 	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
 
+	auto pCoinGo = new Coin();
+	auto pCoinGo1 = new Coin();
+	auto pCoinGo2 = new Coin();
 
 	//Particle 
 	ParticleEmitterSettings settings{};
@@ -279,22 +278,49 @@ void MyGameScene::CreateCoins()
 	settings.minScale = .5f;
 	settings.maxScale = 1.f;
 	settings.minEmitterRadius = 0.1f;
-	settings.maxEmitterRadius = 1.5f;
+	settings.maxEmitterRadius = .3f;
 	settings.color = { 1.f,1.f,1.f, .6f };
-	auto pEmitter = m_pCoin->AddComponent(new ParticleEmitterComponent(L"Textures/StarSparkle.png", settings, 10));
-	m_pCoin->SetParticle(pEmitter);
+	auto pEmitter = pCoinGo->AddComponent(new ParticleEmitterComponent(L"Textures/StarSparkle.png", settings, 10));
+	pCoinGo->SetParticle(pEmitter);
 	pEmitter->SetActive(true);
-	m_pCoin->SetTag(L"Coin");
+	pCoinGo->SetTag(L"Coin");
 
-
-	auto pCoinGo = new Coin();
+	pCoinGo->GetTransform()->Translate(m_OriginalCoinPosition1);
 	AddChild(pCoinGo);
 	auto coinBody = pCoinGo->AddComponent(new RigidBodyComponent());
-	coinBody->AddCollider(PxBoxGeometry{ 1.f, 1.f, 1.f }, *pDefaultMaterial, true);
+	coinBody->AddCollider(PxBoxGeometry{ 0.2f, .2f, .2f }, *pDefaultMaterial, true);
 	pCoinGo->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	coinBody->SetCollisionGroup(CollisionGroup::Group1);
 	coinBody->SetKinematic(true);
 	m_pCoin = pCoinGo;
+
+	pCoinGo1->SetParticle(pEmitter);
+	pEmitter->SetActive(true);
+	pCoinGo1->SetTag(L"Coin");
+
+	pCoinGo1->GetTransform()->Translate(m_OriginalCoinPosition2);
+	AddChild(pCoinGo1);
+	auto coinBody1 = pCoinGo1->AddComponent(new RigidBodyComponent());
+	coinBody1->AddCollider(PxBoxGeometry{ 0.2f, .2f, .2f }, *pDefaultMaterial, true);
+	pCoinGo1->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	coinBody1->SetCollisionGroup(CollisionGroup::Group1);
+	coinBody1->SetKinematic(true);
+	m_pCoin1 = pCoinGo1;
+
+
+	pCoinGo2->SetParticle(pEmitter);
+	pEmitter->SetActive(true);
+	pCoinGo2->SetTag(L"Coin");
+
+	pCoinGo2->GetTransform()->Translate(m_OriginalCoinPosition2);
+	AddChild(pCoinGo2);
+	auto coinBody2 = pCoinGo2->AddComponent(new RigidBodyComponent());
+	coinBody2->AddCollider(PxBoxGeometry{ 0.2f, .2f, .2f }, *pDefaultMaterial, true);
+	pCoinGo2->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	coinBody2->SetCollisionGroup(CollisionGroup::Group1);
+	coinBody2->SetKinematic(true);
+	m_pCoin2 = pCoinGo2;
+
 
 
 
@@ -381,7 +407,7 @@ void MyGameScene::Update()
 	if (!m_SceneInitialized)
 	{
 		m_PixelationTimer += m_SceneContext.pGameTime->GetElapsed();
-		if (m_pPixelation->GetNrPixels() < 500)
+		if (m_pPixelation->GetNrPixels() < 250)
 		{
 			if (m_PixelationTimer >= m_PixelationTime)
 			{
@@ -477,12 +503,23 @@ void MyGameScene::OnTriggerCallBack(GameObject* pTriggerObject, GameObject* pOth
 {
 	if (pTriggerObject->GetTag() == L"Star" && pOtherObject->GetTag() == L"Mario")
 	{
-		++m_ReallyEnableStar;
-		if (m_ReallyEnableStar > 2)
+		m_pWinScreen->Enable(true);
+	}
+	if (pTriggerObject->GetTag() == L"Coin" && pOtherObject->GetTag() == L"Mario")
+	{
+		SoundManager::Get()->GetSystem()->playSound(m_pCoinSound, m_pSoundEffectGroup, false, nullptr);
+
+		bool healthEnabled = false;
+		for (int i = 0; i < 6; ++i)
 		{
-			m_pWinScreen->Enable(true);
+			if (!m_pUI[i]->GetComponent<SpriteComponent>()->IsEnabled() && !healthEnabled)
+			{
+				m_pUI[i]->GetComponent<SpriteComponent>()->Enable(true);
+				healthEnabled = true;
+			}
 
 		}
+		pTriggerObject->GetTransform()->Translate(0.f, 0.f, 0.f);
 	}
 	if (pTriggerObject->GetTag() == L"KoopaTroopa" && pOtherObject->GetTag() == L"Mario")
 	{
@@ -524,7 +561,8 @@ void MyGameScene::ResetScene()
 	m_pKoopaTroopa3->GetTransform()->Translate(m_OriginalKoopaPosition3);
 	m_pKoopaTroopa4->GetTransform()->Translate(m_OriginalKoopaPosition4);
 
-	m_pStar->GetTransform()->Translate(0.f, 0.f, 0.f);
+	m_pStar->GetTransform()->Translate(0.f, -10.f, 0.f);
+	m_pCoin->GetTransform()->Translate(m_OriginalCoinPosition1);
 	m_KoopasKilled = 0;
 
 	for (int i = 0; i < 6; ++i)

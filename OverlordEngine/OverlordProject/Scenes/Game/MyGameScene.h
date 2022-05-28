@@ -48,6 +48,9 @@ private:
 	KoopaTroopa* m_pKoopaTroopa2;
 	KoopaTroopa* m_pKoopaTroopa3;
 	KoopaTroopa* m_pKoopaTroopa4;
+	Coin* m_pCoin;
+	Coin* m_pCoin1;
+	Coin* m_pCoin2;
 	GameObject* m_pCharacterRigidBody;
 	ParticleEmitterComponent* m_pEmitter;
 	PostPixelation* m_pPixelation;
@@ -70,8 +73,12 @@ private:
 	const XMFLOAT3 m_OriginalKoopaPosition3 = { 8.9f, 31.f, 19.f };
 	const XMFLOAT3 m_OriginalKoopaPosition4 = { -29.f, 14.5f, 9.f };
 
+	const XMFLOAT3 m_OriginalCoinPosition1 = { 22.f, 24.f, -9.f };
+	const XMFLOAT3 m_OriginalCoinPosition2 = { 10.f, 13.f, -33.5f };
+	const XMFLOAT3 m_OriginalCoinPosition3 = { -6.8f, 8.7f, 2.4f };
 	FMOD::Sound* m_pGameOverSound{};
 	FMOD::Sound* m_pOofSound{};
+	FMOD::Sound* m_pCoinSound{};
 
 	FMOD::Sound* m_pPauseSound{};
 	FMOD::Sound* m_pStarSound{};
@@ -81,11 +88,5 @@ private:
 	const int m_NrKoopas = 5;
 	int m_KoopasKilled;
 	GameObject* m_pObjectToKill;
-
-	Coin* m_pCoin;
-
-	int m_ReallyEnableStar;//for some reason at the beginnin of the scene mario overlaps with the star TWICE, so this is a little counter to keep track of when mario actually
-	//overlaps with the star
-
 };
 

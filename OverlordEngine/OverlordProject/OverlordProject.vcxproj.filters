@@ -39,6 +39,7 @@
     <ClCompile Include="Scenes\Game\MainMenu.cpp" />
     <ClCompile Include="Prefabs\Star.cpp" />
     <ClCompile Include="Prefabs\Goomba.cpp" />
+    <ClCompile Include="Prefabs\Coin.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -78,5 +79,6 @@
     <ClInclude Include="Scenes\Game\MainMenu.h" />
     <ClInclude Include="Prefabs\Star.h" />
     <ClInclude Include="Prefabs\Goomba.h" />
+    <ClInclude Include="Prefabs\Coin.h" />
   </ItemGroup>
 </Project>
