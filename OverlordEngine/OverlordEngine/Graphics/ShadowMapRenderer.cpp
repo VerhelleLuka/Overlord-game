@@ -37,10 +37,6 @@ void ShadowMapRenderer::Initialize()
 
 void ShadowMapRenderer::UpdateMeshFilter(const SceneContext& sceneContext, MeshFilter* pMeshFilter) const
 {
-	//TODO_W8(L"Implement UpdateMeshFilter")
-	//Here we want to Update the MeshFilter of ModelComponents that need to be rendered to the ShadowMap
-	//Updating the MeshFilter means that we want to create a corresponding VertexBuffer for our ShadowGenerator material
-
 	//1. Figure out the correct ShadowGeneratorType (either Static, or Skinned) with information from the incoming MeshFilter
 
 	MaterialTechniqueContext matTech{};
@@ -94,12 +90,11 @@ void ShadowMapRenderer::Begin(const SceneContext& sceneContext)
 	sceneContext.pLights->GetDirectionalLight().direction.z,
 	sceneContext.pLights->GetDirectionalLight().direction.w };
 	auto focusPos = focusPosVec + dirLightPos;
-	auto viewMat = XMMatrixLookAtLH(dirLightPos, focusPos, dirLightPos);
+	auto viewMat = XMMatrixLookAtLH(dirLightPos, focusPos, { 0.f,1.f,0.f,0.f });
 	//XMMATRIX projMat = XMLoadFloat4x4(&sceneContext.pCamera->GetProjection());
 	//XMMATRIX viewMat = XMLoadFloat4x4(&sceneContext.pCamera->GetView());
 	//XMMATRIX viewProj = XMMatrixMultiply(viewMat, projMat);
 	XMStoreFloat4x4(&m_LightVP, viewMat * projMat);
-
 
 	//3. Update this matrix (m_LightVP) on the ShadowMapMaterial effect
 	m_pShadowMapGenerator->SetVariable_Matrix(L"gLightViewProj", m_LightVP);

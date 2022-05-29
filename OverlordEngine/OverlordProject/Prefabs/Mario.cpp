@@ -47,8 +47,6 @@ void Mario::Initialize(const SceneContext& sceneContext)
 	m_pCameraComponent = pCamera->GetComponent<CameraComponent>();
 	m_pCameraComponent->SetActive(true); //Uncomment to make this camera the active camera
 
-	//Add mario controls
-	//pCamera->GetTransform()->Translate(0.f, m_CharacterDesc.controller.height * .5f, 0.f);
 	InputAction action;
 	action.actionID = m_CharacterDesc.actionId_Run;
 	action.keyboardCode = VK_LSHIFT;
@@ -66,7 +64,7 @@ void Mario::Initialize(const SceneContext& sceneContext)
 	const auto pSkinnedMaterial = MaterialManager::Get()->CreateMaterial<DiffuseMaterial_Shadow_Skinned>();
 	pSkinnedMaterial->SetDiffuseTexture(L"Textures/Mario_UV.png");
 
-	m_pModelComponent->SetMaterial(pSkinnedMaterial);
+	pMarioMesh->SetMaterial(pSkinnedMaterial);
 
 	////Animation
 	if (m_pModelComponent != nullptr)

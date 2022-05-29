@@ -23,7 +23,7 @@ protected:
 	void OnGUI() override;
 	virtual void Update() override;
 	void OnTriggerCallBack(GameObject* /*pTriggerObject*/, GameObject* /*pOtherObject*/, PxTriggerAction /*action*/);
-	//void PostDraw() override;
+	void PostDraw() override;
 
 private:
 	void CreateLevel();

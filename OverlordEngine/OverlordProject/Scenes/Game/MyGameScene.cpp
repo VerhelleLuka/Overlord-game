@@ -14,9 +14,9 @@
 void MyGameScene::Initialize()
 {
 	m_KoopasKilled = 0;
-	m_SceneContext.settings.enableOnGUI = false;
+	m_SceneContext.settings.enableOnGUI = true;
 	m_SceneContext.settings.drawGrid = false;
-	m_SceneContext.settings.showInfoOverlay = false;
+	//m_SceneContext.settings.showInfoOverlay = false;
 
 	//Ground Plane
 	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
@@ -64,9 +64,6 @@ void MyGameScene::Initialize()
 	m_pPixelation->SetIsEnabled(true);
 	m_pPixelation->SetNrPixels(m_NrPixels);
 
-	//m_pGrayscale = MaterialManager::Get()->CreateMaterial<PostGrayscale>();
-	//AddPostProcessingEffect(m_pGrayscale);
-	//m_pGrayscale->SetIsEnabled(true);
 	m_pPixelation->IncreasePixelation();
 	//Sprite
 	for (int i{}; i < 6; ++i)
@@ -409,6 +406,11 @@ void MyGameScene::CreateKoopaTroopas()
 }
 void MyGameScene::Update()
 {
+	//if (InputManager::IsKeyboardKey(InputState::pressed, VK_CONTROL))
+	//{
+	//	const auto pCameraTransform = m_SceneContext.pCamera->GetTransform();
+	//	m_SceneContext.pLights->SetDirectionalLight(pCameraTransform->GetPosition(), { pCameraTransform->GetForward().x,pCameraTransform->GetForward().y, pCameraTransform->GetForward().z });
+	//}
 	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode(std::to_string(m_NrCoins)), m_TextPos, XMFLOAT4{ 1.f,1.f, 1.f, 1.f });
 	m_pPauseMenu->GetTexture()->SetDimenson({ m_SceneContext.windowWidth, m_SceneContext.windowHeight });
 	m_pDeathScreen->GetTexture()->SetDimenson({ m_SceneContext.windowWidth, m_SceneContext.windowHeight });
@@ -507,11 +509,13 @@ void MyGameScene::Update()
 
 void MyGameScene::OnGUI()
 {
+	//	ImGui::Checkbox("Draw ShadowMap", &m_DrawShadowMap);
+	ImGui::SliderFloat("ShadowMap Scale", &m_ShadowMapScale, 0.f, 1.f);
 }
 
 void MyGameScene::OnTriggerCallBack(GameObject* pTriggerObject, GameObject* pOtherObject, PxTriggerAction action)
 {
-	
+
 	if (pTriggerObject->GetTag() == L"Star" && pOtherObject->GetTag() == L"Mario")
 	{
 		m_pWinScreen->Enable(true);
@@ -575,15 +579,13 @@ void MyGameScene::ResetScene()
 	m_pStar->GetTransform()->Translate(0.f, -10.f, 0.f);
 	m_pCoin->GetTransform()->Translate(m_OriginalCoinPosition1);
 	m_KoopasKilled = 0;
-
+	m_NrCoins = 0;
 	for (int i = 0; i < 6; ++i)
 	{
 		m_pUI[i]->GetComponent<SpriteComponent>()->Enable(true);
 	}
 }
-//void MyGameScene::PostDraw()
-//{
-//
-//		ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
-//	
-//}
+void MyGameScene::PostDraw()
+{
+	//ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
+}

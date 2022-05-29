@@ -2,7 +2,7 @@ float4x4 gWorld : WORLD;
 float4x4 gWorldViewProj : WORLDVIEWPROJECTION;
 float4x4 gWorldViewProj_Light;
 float3 gLightDirection = float3(-0.577f, -0.577f, 0.577f);
-float gShadowMapBias = 0.001f;
+float gShadowMapBias = 0.01f;
 
 Texture2D gDiffuseMap;
 Texture2D gShadowMap;
@@ -98,7 +98,7 @@ float EvaluateShadowMap(float4 lPos, float3 normal)
 	lPos.x = (lPos.x / 2.f) + 0.5;
 	lPos.y = (lPos.y / -2.f) + 0.5;
 
-
+	
 	lPos.z -= gShadowMapBias;
 
 	float sum = 0;
@@ -115,7 +115,7 @@ float EvaluateShadowMap(float4 lPos, float3 normal)
 
 
 	//calculate ilumination at fragment
-	float3 L = normalize(gLightDirection);
+	float3 L = normalize(-gLightDirection);
 	float ndotl = dot(normalize(normal), L);
 	return shadowFactor * ndotl + 0.5f;
 }
@@ -130,10 +130,9 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 	float4 diffuseColor = gDiffuseMap.Sample(samLinear,input.texCoord);
 	float3 color_rgb = diffuseColor.rgb;
 	float color_a = diffuseColor.a;
+
 	if (color_a < 0.2f)
-	{
 		discard;
-	}
 	//HalfLambert Diffuse :)
 	float diffuseStrength = dot(input.normal, -gLightDirection);
 	diffuseStrength = diffuseStrength * 0.5 + 0.5;

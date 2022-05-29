@@ -1,8 +1,8 @@
 float4x4 gWorld : WORLD;
 float4x4 gWorldViewProj : WORLDVIEWPROJECTION; 
 float4x4 gWorldViewProj_Light;
-float3 gLightDirection = float3(-0.577f, -0.577f, 0.577f);
-float gShadowMapBias = 0.001f;
+float3 gLightDirection = float3(-0.577f,- 0.577f, 0.577f);
+float gShadowMapBias = 0.01f;
 float4x4 gBones[70];
 
 Texture2D gDiffuseMap;
@@ -72,13 +72,13 @@ VS_OUTPUT VS(VS_INPUT input)
 		if (index > -1)
 		{
 			transformedPosition += mul(originalPosition, gBones[index]) * input.BoneWeights[i];
-			transformedNormal += mul(input.normal, (float3x3)gBones[index]) * input.BoneWeights[i];
+			transformedNormal += input.normal * input.BoneWeights[i];
 		}
 	}
 	transformedPosition.w = 1;
 
 	output.pos = mul(transformedPosition, gWorldViewProj);
-	output.normal = transformedNormal;
+	output.normal = mul(transformedNormal, (float3x3)gWorldViewProj);
 	output.texCoord = input.texCoord;
 	output.lPos = mul(transformedPosition, gWorldViewProj_Light);
 	return output;
@@ -121,9 +121,9 @@ float EvaluateShadowMap(float4 lPos, float3 normal)
 
 
 	//calculate ilumination at fragment
-	float3 L = normalize( gLightDirection);
+	float3 L = normalize( - gLightDirection);
 	float ndotl = dot(normalize(normal), L);
-	return shadowFactor * L + 0.5f;
+	return shadowFactor * ndotl + 0.5f;
 }
 
 //--------------------------------------------------------------------------------------
@@ -136,7 +136,9 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 	float4 diffuseColor = gDiffuseMap.Sample( samLinear,input.texCoord );
 	float3 color_rgb= diffuseColor.rgb;
 	float color_a = diffuseColor.a;
-	
+
+	if (color_a < 0.2f)
+		discard;
 	//HalfLambert Diffuse :)
 	float diffuseStrength = dot(input.normal, -gLightDirection);
 	diffuseStrength = diffuseStrength * 0.5 + 0.5;
