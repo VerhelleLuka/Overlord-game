@@ -1,8 +1,8 @@
 float4x4 gWorld : WORLD;
 float4x4 gWorldViewProj : WORLDVIEWPROJECTION; 
 float4x4 gWorldViewProj_Light;
-float3 gLightDirection = float3(-0.577f,- 0.577f, 0.577f);
-float gShadowMapBias = 0.01f;
+float3 gLightDirection = float3(-0.577f, -0.577f, 0.577f);
+float gShadowMapBias = 0.001f;
 float4x4 gBones[70];
 
 Texture2D gDiffuseMap;
@@ -99,7 +99,7 @@ float EvaluateShadowMap(float4 lPos, float3 normal)
 	//if position is not visible to the light - dont illuminate it
 	if (lPos.x < -1.0f || lPos.x > 1.0f ||
 		lPos.y < -1.0f || lPos.y > 1.0f ||
-		lPos.z < 0.0f || lPos.z > 1.0f) return 1.0f;
+		lPos.z < 0.0f || lPos.z > 1.0f) return .9f;
 
 	lPos.x = lPos.x / 2 + 0.5;
 	lPos.y = lPos.y / -2 + 0.5;
@@ -118,12 +118,7 @@ float EvaluateShadowMap(float4 lPos, float3 normal)
 		}
 	}
 	float shadowFactor = sum / 16.0;
-
-
-	//calculate ilumination at fragment
-	float3 L = normalize( - gLightDirection);
-	float ndotl = dot(normalize(normal), L);
-	return shadowFactor * ndotl + 0.5f;
+	return shadowFactor * 0.5f + 0.5f;
 }
 
 //--------------------------------------------------------------------------------------
@@ -136,7 +131,6 @@ float4 PS(VS_OUTPUT input) : SV_TARGET
 	float4 diffuseColor = gDiffuseMap.Sample( samLinear,input.texCoord );
 	float3 color_rgb= diffuseColor.rgb;
 	float color_a = diffuseColor.a;
-
 	if (color_a < 0.2f)
 		discard;
 	//HalfLambert Diffuse :)

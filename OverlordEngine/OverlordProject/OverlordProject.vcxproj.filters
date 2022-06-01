@@ -40,6 +40,7 @@
     <ClCompile Include="Prefabs\Star.cpp" />
     <ClCompile Include="Prefabs\Goomba.cpp" />
     <ClCompile Include="Prefabs\Coin.cpp" />
+    <ClCompile Include="Materials\SkyBox.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainGame.h" />
@@ -80,5 +81,6 @@
     <ClInclude Include="Prefabs\Star.h" />
     <ClInclude Include="Prefabs\Goomba.h" />
     <ClInclude Include="Prefabs\Coin.h" />
+    <ClInclude Include="Materials\SkyBox.h" />
   </ItemGroup>
 </Project>

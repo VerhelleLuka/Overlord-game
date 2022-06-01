@@ -10,14 +10,20 @@
 #include "Prefabs/Star.h"
 #include "Prefabs/Goomba.h"
 #include "Prefabs/Coin.h"
+#include <Materials/DiffuseMaterial.h>
+#include <Materials/SkyBox.h>
+#include "Prefabs/CubePrefab.h"
 
 void MyGameScene::Initialize()
 {
 	m_KoopasKilled = 0;
-	m_SceneContext.settings.enableOnGUI = true;
+	m_SceneContext.settings.enableOnGUI = false;
 	m_SceneContext.settings.drawGrid = false;
-	//m_SceneContext.settings.showInfoOverlay = false;
+	m_SceneContext.settings.showInfoOverlay = false;
+	m_SceneContext.settings.drawPhysXDebug = false;
+	m_SceneContext.settings.drawUserDebug = false;
 
+	m_AddCoin = false;
 	//Ground Plane
 	const auto pDefaultMaterial = PxGetPhysics().createMaterial(0.5f, 0.5f, 0.5f);
 	GameSceneExt::CreatePhysXGroundPlane(*this, pDefaultMaterial);
@@ -92,7 +98,8 @@ void MyGameScene::Initialize()
 	m_pCharacter->SetParticle(m_pEmitter);
 
 	//Light
-	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, 0.597205281f, 0.309117377f });
+	m_SceneContext.pLights->SetDirectionalLight({ -95.6139526f,66.1346436f,-41.1850471f }, { 0.740129888f, -0.597205281f, 0.309117377f });
+
 
 	//Pause menu
 	auto pPauseGo = new GameObject();
@@ -122,6 +129,10 @@ void MyGameScene::Initialize()
 	pSoundSystem->createStream("Resources/Sounds/pause.wav", FMOD_DEFAULT, nullptr, &m_pPauseSound);
 	pSoundSystem->createStream("Resources/Sounds/Coin.wav", FMOD_DEFAULT, nullptr, &m_pCoinSound);
 
+	pSoundSystem->createStream("Resources/Sounds/Music.wav", FMOD_DEFAULT, nullptr, &m_pMusic);
+	
+	m_pMusic->setMode(FMOD_LOOP_NORMAL);
+	
 	CreateStar();
 	CreateCoins();
 	CreateKoopaTroopas();
@@ -133,6 +144,15 @@ void MyGameScene::Initialize()
 
 	m_NrCoins = 0;
 
+	//Skybox
+	//auto fuckYou = AddChild(new CubePrefab(XMFLOAT3{100.f,100.f,100.f}));
+	auto cubeGo = AddChild(new GameObject());
+	const auto pSkyBoxMesh = cubeGo->AddComponent(new ModelComponent(L"Meshes/Cube.ovm"));
+	const auto skyBoxMat = MaterialManager::Get()->CreateMaterial<SkyBox>();
+	skyBoxMat->SetDiffuseTexture(L"Textures/skybox1.dds");
+	pSkyBoxMesh->SetMaterial(skyBoxMat);
+
+	m_PlayMusic = true;
 }
 
 void MyGameScene::CreateLevel()
@@ -194,6 +214,7 @@ void MyGameScene::CreateLevel()
 	//pGrassMat->SetDiffuseTexture(L"Textures/Grass.bmp");
 	//LEVEL
 	const auto pLevelObject = AddChild(new GameObject());
+	//const auto pLevelMesh = pLevelObject->AddComponent(new ModelComponent(L"Meshes/bb/BobOmbBattlefield.ovm"));
 	const auto pLevelMesh = pLevelObject->AddComponent(new ModelComponent(L"Meshes/Bobomb_Battlefield2.ovm"));
 	pLevelObject->SetTag(L"Level");
 	//SET MATERIALS
@@ -225,11 +246,14 @@ void MyGameScene::CreateLevel()
 
 
 	const auto pLevelActor = pLevelObject->AddComponent(new RigidBodyComponent(true));
-	pLevelObject->GetComponent<RigidBodyComponent>()->GetTransform()->Scale(0.5f, 0.5f, 0.5f);
+	pLevelObject->GetComponent<RigidBodyComponent>()->GetTransform()->Scale(1.f, 1.f, 1.f);
+	//const auto pPxTriangleMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/bb/BobOmbBattlefield.ovpt");
 	const auto pPxTriangleMesh = ContentManager::Load<PxTriangleMesh>(L"Meshes/Bobomb_Battlefield.ovpt");
 	pLevelActor->AddCollider(PxTriangleMeshGeometry(pPxTriangleMesh, PxMeshScale({ 1.f, 1.f, 1.f })), *pDefaultMaterial);
 
-	pLevelObject->GetTransform()->Scale(1.f, 1.f, 1.f);
+	pLevelObject->GetTransform()->Scale(1.f,1.f, 1.f);
+	
+
 }
 
 void MyGameScene::CreateStar()
@@ -286,7 +310,11 @@ void MyGameScene::CreateCoins()
 	settings.minEmitterRadius = 0.1f;
 	settings.maxEmitterRadius = .3f;
 	settings.color = { 1.f,1.f,1.f, .6f };
+
 	auto pEmitter = pCoinGo->AddComponent(new ParticleEmitterComponent(L"Textures/StarSparkle.png", settings, 10));
+	auto pEmitter2 = pCoinGo1->AddComponent(new ParticleEmitterComponent(L"Textures/StarSparkle.png", settings, 10));
+	auto pEmitter3 = pCoinGo2->AddComponent(new ParticleEmitterComponent(L"Textures/StarSparkle.png", settings, 10));
+
 	pCoinGo->SetParticle(pEmitter);
 	pEmitter->SetActive(true);
 	pCoinGo->SetTag(L"Coin");
@@ -294,34 +322,34 @@ void MyGameScene::CreateCoins()
 	pCoinGo->GetTransform()->Translate(m_OriginalCoinPosition1);
 	AddChild(pCoinGo);
 	auto coinBody = pCoinGo->AddComponent(new RigidBodyComponent());
-	coinBody->AddCollider(PxBoxGeometry{ 0.2f, .2f, .2f }, *pDefaultMaterial, true);
+	coinBody->AddCollider(PxBoxGeometry{ .2f, .2f, .2f }, *pDefaultMaterial, true);
 	pCoinGo->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	coinBody->SetCollisionGroup(CollisionGroup::Group1);
 	coinBody->SetKinematic(true);
 	m_pCoin = pCoinGo;
 
-	pCoinGo1->SetParticle(pEmitter);
-	pEmitter->SetActive(true);
+	pCoinGo1->SetParticle(pEmitter2);
+	pEmitter2->SetActive(true);
 	pCoinGo1->SetTag(L"Coin");
 
 	pCoinGo1->GetTransform()->Translate(m_OriginalCoinPosition2);
 	AddChild(pCoinGo1);
 	auto coinBody1 = pCoinGo1->AddComponent(new RigidBodyComponent());
-	coinBody1->AddCollider(PxBoxGeometry{ 0.2f, .2f, .2f }, *pDefaultMaterial, true);
+	coinBody1->AddCollider(PxBoxGeometry{ .2f, .2f, .2f }, *pDefaultMaterial, true);
 	pCoinGo1->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	coinBody1->SetCollisionGroup(CollisionGroup::Group1);
 	coinBody1->SetKinematic(true);
 	m_pCoin1 = pCoinGo1;
 
 
-	pCoinGo2->SetParticle(pEmitter);
-	pEmitter->SetActive(true);
+	pCoinGo2->SetParticle(pEmitter3);
+	pEmitter3->SetActive(true);
 	pCoinGo2->SetTag(L"Coin");
 
-	pCoinGo2->GetTransform()->Translate(m_OriginalCoinPosition2);
+	pCoinGo2->GetTransform()->Translate(m_OriginalCoinPosition3);
 	AddChild(pCoinGo2);
 	auto coinBody2 = pCoinGo2->AddComponent(new RigidBodyComponent());
-	coinBody2->AddCollider(PxBoxGeometry{ 0.2f, .2f, .2f }, *pDefaultMaterial, true);
+	coinBody2->AddCollider(PxBoxGeometry{ .2f, .2f, .2f }, *pDefaultMaterial, true);
 	pCoinGo2->SetOnTriggerCallBack(std::bind(&MyGameScene::OnTriggerCallBack, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	coinBody2->SetCollisionGroup(CollisionGroup::Group1);
 	coinBody2->SetKinematic(true);
@@ -406,11 +434,11 @@ void MyGameScene::CreateKoopaTroopas()
 }
 void MyGameScene::Update()
 {
-	//if (InputManager::IsKeyboardKey(InputState::pressed, VK_CONTROL))
-	//{
-	//	const auto pCameraTransform = m_SceneContext.pCamera->GetTransform();
-	//	m_SceneContext.pLights->SetDirectionalLight(pCameraTransform->GetPosition(), { pCameraTransform->GetForward().x,pCameraTransform->GetForward().y, pCameraTransform->GetForward().z });
-	//}
+	if (m_PlayMusic)
+	{
+		SoundManager::Get()->GetSystem()->playSound(m_pMusic, m_pSoundEffectGroup, false, &m_pMusicChannel);
+		m_PlayMusic = false;
+	}
 	TextRenderer::Get()->DrawText(m_pFont, StringUtil::utf8_decode(std::to_string(m_NrCoins)), m_TextPos, XMFLOAT4{ 1.f,1.f, 1.f, 1.f });
 	m_pPauseMenu->GetTexture()->SetDimenson({ m_SceneContext.windowWidth, m_SceneContext.windowHeight });
 	m_pDeathScreen->GetTexture()->SetDimenson({ m_SceneContext.windowWidth, m_SceneContext.windowHeight });
@@ -436,12 +464,15 @@ void MyGameScene::Update()
 	{
 		if (!m_pCharacter->GetPaused())
 		{
+			m_pMusicChannel->setPaused(true);
 
 			m_pCharacter->SetPaused(true);
 			m_pPauseMenu->Enable(true);
 		}
 		else
 		{
+			m_pMusicChannel->setPaused(false);
+
 			m_pCharacter->SetPaused(false);
 			m_pPauseMenu->Enable(false);
 		}
@@ -451,22 +482,29 @@ void MyGameScene::Update()
 	{
 		m_pCharacter->GetTransform()->Translate(m_OriginalPosition);
 		m_pPauseMenu->Enable(false);
+		m_pDeathScreen->Enable(false);
+		m_pWinScreen->Enable(false);
 		m_pCharacter->SetPaused(false);
-
+		ResetScene();
 
 	}
 	if (InputManager::IsKeyboardKey(InputState::pressed, VK_RETURN) && m_pCharacter->GetPaused())
 	{
 		m_pCharacter->GetTransform()->Translate(m_OriginalPosition);
-		m_pCharacter->SetPaused(false);
+		m_pMusicChannel->setPaused(true);
+		m_pCharacter->SetPaused(true);
 		m_pPauseMenu->Enable(false);
+		m_pDeathScreen->Enable(false);
+		m_pWinScreen->Enable(false);
+		ResetScene();
 		SceneManager::Get()->PreviousScene();
 	}
 	if (m_KillKoopaTroopa)
 	{
 		++m_KoopasKilled;
 		m_KillKoopaTroopa = false;
-		m_pCharacter->AddForce(0.f, 30.f, 0.f);
+		//m_pCharacter->SetYForce(0.f);
+		//m_pCharacter->AddForce(0.f, 300.f, 0.f);
 		m_pObjectToKill->GetTransform()->Translate(0.f, 0.f, 0.f);
 	}
 	if (!m_pUI[0]->GetComponent<SpriteComponent>()->IsEnabled() && !m_pDeathScreen->IsEnabled() && !m_pWinScreen->IsEnabled())
@@ -474,6 +512,8 @@ void MyGameScene::Update()
 
 		SoundManager::Get()->GetSystem()->playSound(m_pGameOverSound, m_pSoundEffectGroup, false, nullptr);
 		m_pDeathScreen->Enable(true);
+		m_pMusicChannel->setPaused(true);
+
 		//ResetScene();
 	}
 	if (m_pDeathScreen->IsEnabled() || m_pWinScreen->IsEnabled())
@@ -481,35 +521,37 @@ void MyGameScene::Update()
 		if (InputManager::IsKeyboardKey(InputState::pressed, VK_ESCAPE))
 		{
 			m_pDeathScreen->Enable(false);
+			m_pMusicChannel->setPaused(false);
 			m_pWinScreen->Enable(false);
 			ResetScene();
-
 			SceneManager::Get()->PreviousScene();
-
 		}
 		if (InputManager::IsKeyboardKey(InputState::pressed, VK_SPACE))
 		{
+			m_pMusicChannel->setPaused(false);
+
 			m_pDeathScreen->Enable(false);
 			m_pWinScreen->Enable(false);
-
 			ResetScene();
-
 		}
 
 	}
 	if (m_KoopasKilled >= 5)
 	{
+		
+		SoundManager::Get()->GetSystem()->playSound(m_pStarSound,m_pSoundEffectGroup, false, nullptr);
 		m_pStar->GetTransform()->Translate(m_OriginalStarPosition);
 		m_KoopasKilled = 0;
-
 	}
-
-
+	if (m_AddCoin)
+	{
+		++m_NrCoins;
+		m_AddCoin = false;
+	}
 }
 
 void MyGameScene::OnGUI()
 {
-	//	ImGui::Checkbox("Draw ShadowMap", &m_DrawShadowMap);
 	ImGui::SliderFloat("ShadowMap Scale", &m_ShadowMapScale, 0.f, 1.f);
 }
 
@@ -523,7 +565,7 @@ void MyGameScene::OnTriggerCallBack(GameObject* pTriggerObject, GameObject* pOth
 	if (pTriggerObject->GetTag() == L"Coin" && pOtherObject->GetTag() == L"Mario" && action == PxTriggerAction::ENTER)
 	{
 		SoundManager::Get()->GetSystem()->playSound(m_pCoinSound, m_pSoundEffectGroup, false, nullptr);
-		m_NrCoins++;
+		m_AddCoin = true;
 		bool healthEnabled = false;
 		for (int i = 0; i < 6; ++i)
 		{
@@ -540,6 +582,7 @@ void MyGameScene::OnTriggerCallBack(GameObject* pTriggerObject, GameObject* pOth
 	{
 		if (pTriggerObject->GetTransform()->GetWorldPosition().y > pOtherObject->GetTransform()->GetWorldPosition().y)
 		{
+			
 			SoundManager::Get()->GetSystem()->playSound(m_pOofSound, m_pSoundEffectGroup, false, nullptr);
 			int amountDisabled = 0;
 			for (int i = 5; i >= 0; --i)
@@ -569,7 +612,8 @@ void MyGameScene::ResetScene()
 	m_pCharacter->SetPaused(false);
 	m_pDeathScreen->Enable(false);
 	m_pWinScreen->Enable(false);
-
+	m_pMusicChannel->setPaused(true);
+	m_PlayMusic = true;
 	m_pKoopaTroopa->GetTransform()->Translate(m_OriginalKoopaPosition);
 	m_pKoopaTroopa1->GetTransform()->Translate(m_OriginalKoopaPosition1);
 	m_pKoopaTroopa2->GetTransform()->Translate(m_OriginalKoopaPosition2);
@@ -584,8 +628,11 @@ void MyGameScene::ResetScene()
 	{
 		m_pUI[i]->GetComponent<SpriteComponent>()->Enable(true);
 	}
+	m_SceneInitialized = false;
+	m_NrPixels = 2;
+	m_pPixelation->SetIsEnabled(true);
+	m_pPixelation->SetNrPixels(m_NrPixels);
 }
 void MyGameScene::PostDraw()
 {
-	//ShadowMapRenderer::Get()->Debug_DrawDepthSRV({ m_SceneContext.windowWidth - 10.f, 10.f }, { m_ShadowMapScale, m_ShadowMapScale }, { 1.f,0.f });
 }

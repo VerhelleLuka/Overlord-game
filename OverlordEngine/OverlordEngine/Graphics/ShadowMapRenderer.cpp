@@ -79,7 +79,7 @@ void ShadowMapRenderer::Begin(const SceneContext& sceneContext)
 	//		*eyePosition: Position of the Direction Light (SceneContext::pLights > Retrieve Directional Light)
 	//		*focusPosition: Calculate using the Direction Light position and direction
 	//- Use the Projection & View Matrix to calculate the ViewProjection of this Light, store in m_LightVP
-	auto projMat = XMMatrixOrthographicLH(100.f * sceneContext.aspectRatio, 100.f, 0.1f, 500.f);
+	auto projMat = XMMatrixOrthographicLH(100.f * sceneContext.aspectRatio, 100.f, 0.1f, 1000.f);
 	XMVECTOR dirLightPos = { sceneContext.pLights->GetDirectionalLight().position.x,
 		sceneContext.pLights->GetDirectionalLight().position.y,
 		sceneContext.pLights->GetDirectionalLight().position.z,
@@ -89,7 +89,7 @@ void ShadowMapRenderer::Begin(const SceneContext& sceneContext)
 	sceneContext.pLights->GetDirectionalLight().direction.y,
 	sceneContext.pLights->GetDirectionalLight().direction.z,
 	sceneContext.pLights->GetDirectionalLight().direction.w };
-	auto focusPos = focusPosVec + dirLightPos;
+	auto focusPos = dirLightPos+focusPosVec;
 	auto viewMat = XMMatrixLookAtLH(dirLightPos, focusPos, { 0.f,1.f,0.f,0.f });
 	//XMMATRIX projMat = XMLoadFloat4x4(&sceneContext.pCamera->GetProjection());
 	//XMMATRIX viewMat = XMLoadFloat4x4(&sceneContext.pCamera->GetView());
@@ -163,7 +163,7 @@ void ShadowMapRenderer::DrawMesh(const SceneContext& sceneContext, MeshFilter* p
 		for (UINT p = 0; p < techDesc.Passes; ++p)
 		{
 			tech->GetPassByIndex(p)->Apply(0, pDeviceContext);
-			pDeviceContext->DrawIndexed(subMesh.indexCount, 0, 0);
+			pDeviceContext->Draw(subMesh.indexCount, 0);
 		}
 	}
 }

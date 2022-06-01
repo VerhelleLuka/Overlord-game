@@ -16,6 +16,7 @@ void PostPixelation::Initialize(const GameContext&)
 }
 void PostPixelation::SetNrPixels(int nr)
 {
+	m_NrPixels = nr;
 	m_pBaseEffect->GetVariableByName("gNrPixels")->AsScalar()->SetInt(nr);
 
 }

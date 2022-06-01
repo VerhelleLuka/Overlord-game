@@ -29,7 +29,6 @@ public:
 	Mario& operator=(const Mario& other) = delete;
 	Mario& operator=(Mario&& other) noexcept = delete;
 
-	void DrawImGui();
 	void SetGameMode(GameMode gameMode);
 
 	void SetParticle(ParticleEmitterComponent* particle) { m_pParticle = particle; }
@@ -37,7 +36,7 @@ public:
 	void SetPaused(bool isPaused) { m_IsPaused = isPaused; }
 
 	void AddForce(float x, float y, float z);
-
+	void SetYForce(float force) { m_TotalVelocity.y = force; }
 protected:
 	void Initialize(const SceneContext&) override;
 	void Update(const SceneContext&) override;
@@ -111,8 +110,8 @@ private:
 	ParticleEmitterComponent* m_pParticle;
 
 	//Other stuff
-	const float m_yPosOffset = -.75f;
-	const float m_Scale = 0.0075f;
+	const float m_yPosOffset = -1.35f;
+	const float m_Scale = 0.01f;
 
 	//For pause menu
 	bool m_IsPaused;
@@ -129,6 +128,8 @@ private:
 
 	//raycast
 	const float m_RayCastDistance = 0.07f;
+
+		const float m_MaxJumpSpeed = 26.f;
 
 };
 

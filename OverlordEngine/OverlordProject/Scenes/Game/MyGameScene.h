@@ -77,15 +77,16 @@ private:
 
 	const XMFLOAT3 m_OriginalCoinPosition1 = { 22.f, 24.f, -9.f };
 	const XMFLOAT3 m_OriginalCoinPosition2 = { 10.f, 13.f, -33.5f };
-	const XMFLOAT3 m_OriginalCoinPosition3 = { -6.8f, 8.7f, 2.4f };
+	const XMFLOAT3 m_OriginalCoinPosition3 = { -7.2f, 8.7f, 0.f };
 	FMOD::Sound* m_pGameOverSound{};
 	FMOD::Sound* m_pOofSound{};
 	FMOD::Sound* m_pCoinSound{};
 
 	FMOD::Sound* m_pPauseSound{};
 	FMOD::Sound* m_pStarSound{};
+	FMOD::Sound* m_pMusic{};
 	FMOD::ChannelGroup* m_pSoundEffectGroup{};
-
+	FMOD::Channel* m_pMusicChannel{};
 	bool m_KillKoopaTroopa;
 	const int m_NrKoopas = 5;
 	int m_KoopasKilled;
@@ -94,5 +95,9 @@ private:
 	int m_NrCoins;
 	XMFLOAT2 m_TextPos;
 	float m_ShadowMapScale{ 0.3f };
+
+	bool m_AddCoin;
+
+	bool m_PlayMusic;
 };
 
