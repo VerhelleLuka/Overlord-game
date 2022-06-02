@@ -10,6 +10,7 @@ void MainMenu::Initialize()
 	
 	auto pGo = new GameObject();
 	m_pTitleScreen = new SpriteComponent(L"Textures/TitleScreen.png");
+	m_pTitleScreen->Enable(true);
 	pGo->AddComponent(m_pTitleScreen);
 	AddChild(pGo);
 }

@@ -72,13 +72,22 @@ void MyGameScene::Initialize()
 
 	m_pPixelation->IncreasePixelation();
 	//Sprite
+	//for (int i{}; i < 6; ++i)
+	//{
+	//	auto uiGo = AddChild(new GameObject());
+	//	m_pUI[i] = new SpriteComponent(L"Textures/TestSprite.png", { 0.5f, 0.5f }, { 1.f,1.f ,1.f ,1.f });
+	//	uiGo->AddChild<SpriteComponent>(&m_pUI[i]);
+	//	m_pUI[i]->GetTransform()->Translate((m_SceneContext.windowWidth / 50.f) * ((i + 1) * 1.1f), m_SceneContext.windowHeight / 10.f, .9f);
+	//	m_pUI[i]->GetTransform()->Rotate(0, 0, (360.f / ((i % 2) + 1)), true);
+	//}
 	for (int i{}; i < 6; ++i)
 	{
-		m_pUI[i] = new GameObject();
-		m_pUI[i]->AddComponent(new SpriteComponent(L"Textures/TestSprite.png", { 0.5f, 0.5f }, { 1.f,1.f ,1.f ,1.f }));
-		AddChild(m_pUI[i]);
-		m_pUI[i]->GetComponent<SpriteComponent>()->GetTransform()->Translate((m_SceneContext.windowWidth / 50.f) * ((i + 1) * 1.1f), m_SceneContext.windowHeight / 10.f, .9f);
-		m_pUI[i]->GetComponent<SpriteComponent>()->GetTransform()->Rotate(0, 0, (360.f / ((i % 2) + 1)), true);
+		auto uiGo = AddChild(new GameObject());
+		m_pUIVec.push_back(new SpriteComponent(L"Textures/TestSprite.png", { 0.5f, 0.5f }, { 1.f,1.f ,1.f ,1.f }));
+		uiGo->AddComponent(m_pUIVec[i]);
+		m_pUIVec[i]->GetTransform()->Translate((m_SceneContext.windowWidth / 50.f) * ((i + 1) * 1.1f), m_SceneContext.windowHeight / 10.f, .9f);
+		m_pUIVec[i]->GetTransform()->Rotate(0, 0, (360.f / ((i % 2) + 1)), true);
+		m_pUIVec[i]->Enable(true);
 	}
 
 	//Particle 
@@ -507,7 +516,7 @@ void MyGameScene::Update()
 		//m_pCharacter->AddForce(0.f, 300.f, 0.f);
 		m_pObjectToKill->GetTransform()->Translate(0.f, 0.f, 0.f);
 	}
-	if (!m_pUI[0]->GetComponent<SpriteComponent>()->IsEnabled() && !m_pDeathScreen->IsEnabled() && !m_pWinScreen->IsEnabled())
+	if (!m_pUIVec[0]->IsEnabled() && !m_pDeathScreen->IsEnabled() && !m_pWinScreen->IsEnabled())
 	{
 
 		SoundManager::Get()->GetSystem()->playSound(m_pGameOverSound, m_pSoundEffectGroup, false, nullptr);
@@ -569,9 +578,9 @@ void MyGameScene::OnTriggerCallBack(GameObject* pTriggerObject, GameObject* pOth
 		bool healthEnabled = false;
 		for (int i = 0; i < 6; ++i)
 		{
-			if (!m_pUI[i]->GetComponent<SpriteComponent>()->IsEnabled() && !healthEnabled)
+			if (!m_pUIVec[i]->IsEnabled() && !healthEnabled)
 			{
-				m_pUI[i]->GetComponent<SpriteComponent>()->Enable(true);
+				m_pUIVec[i]->Enable(true);
 				healthEnabled = true;
 			}
 
@@ -587,10 +596,10 @@ void MyGameScene::OnTriggerCallBack(GameObject* pTriggerObject, GameObject* pOth
 			int amountDisabled = 0;
 			for (int i = 5; i >= 0; --i)
 			{
-				if (m_pUI[i]->GetComponent<SpriteComponent>()->IsEnabled() && amountDisabled != 2)
+				if (m_pUIVec[i]->IsEnabled() && amountDisabled != 2)
 				{
 					++amountDisabled;
-					m_pUI[i]->GetComponent<SpriteComponent>()->EnableWithDelay(false, float(amountDisabled));
+					m_pUIVec[i]->EnableWithDelay(false, float(amountDisabled));
 				}
 
 			}
@@ -626,7 +635,7 @@ void MyGameScene::ResetScene()
 	m_NrCoins = 0;
 	for (int i = 0; i < 6; ++i)
 	{
-		m_pUI[i]->GetComponent<SpriteComponent>()->Enable(true);
+		m_pUIVec[i]->Enable(true);
 	}
 	m_SceneInitialized = false;
 	m_NrPixels = 2;

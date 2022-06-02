@@ -61,7 +61,8 @@ private:
 	int m_NrPixels;
 	float m_PixelationTimer = 0.f;
 	const float m_PixelationTime = 0.001f;
-	GameObject* m_pUI[6];
+	SpriteComponent* m_pUI[6];
+	std::vector<SpriteComponent*> m_pUIVec;
 	SpriteComponent* m_pPauseMenu;
 	SpriteComponent* m_pDeathScreen;
 	SpriteComponent* m_pWinScreen;
