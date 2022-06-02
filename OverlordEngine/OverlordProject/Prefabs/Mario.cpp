@@ -177,28 +177,17 @@ void Mario::Update(const SceneContext& sceneContext)
 				GetTransform()->GetWorldPosition().y,
 				GetTransform()->GetWorldPosition().z };
 
-			//if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(camOrigin, camForwardVec,
-			//	(m_CameraDistance * -1) - 5.f, raycastBuffer))
+			//if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(playerOrigin, camForwardVec * -1,
+			//	(m_CameraDistance * -1), raycastBuffer))
 			//{
 			//	if (static_cast<BaseComponent*>(raycastBuffer.getAnyHit(static_cast<PxU32>(0)).actor->userData)->GetGameObject()->GetTag() == L"Level")
 			//	{
 			//		regularCalculation = false;
-			//		m_pCameraComponent->GetTransform()->Translate(XMVECTOR{ camOrigin.x - raycastBuffer.block.position.x
-			//		, camOrigin.y - raycastBuffer.block.position.y
-			//		, camOrigin.z- raycastBuffer.block.position.z });
+			//		m_pCameraComponent->GetTransform()->Translate(XMVECTOR{ raycastBuffer.block.position.x
+			//		, raycastBuffer.block.position.y
+			//		, raycastBuffer.block.position.z });
 			//	}
 			//}
-			if (SceneManager::Get()->GetActiveScene()->GetPhysxProxy()->Raycast(playerOrigin, camForwardVec * -1,
-				(m_CameraDistance * -1), raycastBuffer))
-			{
-				if (static_cast<BaseComponent*>(raycastBuffer.getAnyHit(static_cast<PxU32>(0)).actor->userData)->GetGameObject()->GetTag() == L"Level")
-				{
-					regularCalculation = false;
-					m_pCameraComponent->GetTransform()->Translate(XMVECTOR{ /*camOrigin.x -*/ raycastBuffer.block.position.x
-					, /*camOrigin.y -*/ raycastBuffer.block.position.y
-					, /*camOrigin.z -*/ raycastBuffer.block.position.z });
-				}
-			}
 			if(regularCalculation)
 			
 			{
